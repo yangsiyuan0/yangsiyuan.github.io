@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="SpringCloud," />
 
 
 
@@ -79,14 +79,20 @@
 
 
 
-<meta name="description" content="格物致知">
-<meta property="og:type" content="website">
-<meta property="og:title" content="小土狗的博客">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;index.html">
+<meta name="description" content="1. Spring版本说明本文档对工业界常用的服务治理框架、及其对应的技术栈进行预研。相关技术栈均基于JDK + Spring生态，因此在探索具体的服务治理框架之前，我们需要先对jdk、spring、springBoot、springCloud的相关版本进行相关梳理及选定：    Spring Framework springBoot springCloud JDK    Spring Frame">
+<meta name="keywords" content="SpringCloud">
+<meta property="og:type" content="article">
+<meta property="og:title" content="服务注册与发现">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;10&#x2F;23&#x2F;%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0&#x2F;index.html">
 <meta property="og:site_name" content="小土狗的博客">
-<meta property="og:description" content="格物致知">
+<meta property="og:description" content="1. Spring版本说明本文档对工业界常用的服务治理框架、及其对应的技术栈进行预研。相关技术栈均基于JDK + Spring生态，因此在探索具体的服务治理框架之前，我们需要先对jdk、spring、springBoot、springCloud的相关版本进行相关梳理及选定：    Spring Framework springBoot springCloud JDK    Spring Frame">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="en-resource:&#x2F;&#x2F;database&#x2F;5773:1">
+<meta property="og:image" content="en-resource:&#x2F;&#x2F;database&#x2F;5767:1">
+<meta property="og:image" content="en-resource:&#x2F;&#x2F;database&#x2F;5769:1">
+<meta property="og:updated_time" content="2019-10-23T10:33:20.363Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="en-resource:&#x2F;&#x2F;database&#x2F;5773:1">
 
 
 
@@ -116,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2019/10/23/服务注册与发现/"/>
 
 
 
 
 
-  <title>小土狗的博客</title>
+  <title>服务注册与发现 | 小土狗的博客</title>
   
 
 
@@ -141,8 +147,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -215,9 +220,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -247,9 +252,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/23/%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0/" itemprop="url">服务注册与发现</a></h1>
+          <h1 class="post-title" itemprop="name headline">服务注册与发现</h1>
         
 
         <div class="post-meta">
@@ -299,9 +302,7 @@
       
 
       
-        
-          
-            <h3 id="1-Spring版本说明"><a href="#1-Spring版本说明" class="headerlink" title="1. Spring版本说明"></a>1. Spring版本说明</h3><p>本文档对工业界常用的服务治理框架、及其对应的技术栈进行预研。相关技术栈均基于JDK + Spring生态，因此在探索具体的服务治理框架之前，我们需要先对jdk、spring、springBoot、springCloud的相关版本进行相关梳理及选定：</p>
+        <h3 id="1-Spring版本说明"><a href="#1-Spring版本说明" class="headerlink" title="1. Spring版本说明"></a>1. Spring版本说明</h3><p>本文档对工业界常用的服务治理框架、及其对应的技术栈进行预研。相关技术栈均基于JDK + Spring生态，因此在探索具体的服务治理框架之前，我们需要先对jdk、spring、springBoot、springCloud的相关版本进行相关梳理及选定：</p>
 <table>
 <thead>
 <tr>
@@ -512,8 +513,6 @@
 <li><strong>调用Feign客户端</strong></li>
 </ul>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 注入Feign客户端</span></span><br><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> FeignClientUtil feignClientUtil;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getCloudTypeFeign</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   String res = feignClientUtil.getCloudType();</span><br><span class="line">   Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;CloudType&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">   XtcpCommonReponse&lt;CloudType&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getParameterFeign</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String res = feignClientUtil.getParameter(<span class="string">"dayang.com"</span>, <span class="string">"admin"</span>, <span class="string">"token"</span>, <span class="string">"PUB_CRECAS"</span>);</span><br><span class="line">    Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">    XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">    List&lt;CcsParameter&gt; parameterList = response.getData();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          
-        
       
     </div>
     
@@ -528,146 +527,36 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/23/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="杨思远">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="小土狗的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/23/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-23T14:52:27+08:00">
-                2019-10-23
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/SpringCloud/" rel="tag"># SpringCloud</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/23/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
       
     </footer>
   </div>
@@ -677,10 +566,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -688,6 +578,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -708,8 +602,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -760,6 +663,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Spring版本说明"><span class="nav-number">1.</span> <span class="nav-text">1. Spring版本说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-CAP原则"><span class="nav-number">2.</span> <span class="nav-text">2. CAP原则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-常用服务治理框架"><span class="nav-number"></span> <span class="nav-text">二.常用服务治理框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Eureka"><span class="nav-number">1.</span> <span class="nav-text">1. Eureka(*)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Consul"><span class="nav-number">2.</span> <span class="nav-text">2. Consul</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Dubbo-Zookeeper"><span class="nav-number">3.</span> <span class="nav-text">3. Dubbo+Zookeeper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Nacos"><span class="nav-number">4.</span> <span class="nav-text">4. Nacos</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-etcd"><span class="nav-number">5.</span> <span class="nav-text">5. etcd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-SpringCloud-Alibaba"><span class="nav-number">6.</span> <span class="nav-text">6. SpringCloud Alibaba</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Eureka项目实践"><span class="nav-number"></span> <span class="nav-text">三. Eureka项目实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Eureka注册中心搭建-单机"><span class="nav-number">1.</span> <span class="nav-text">1. Eureka注册中心搭建(单机)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-pom依赖"><span class="nav-number">1.1.</span> <span class="nav-text">1). pom依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-启动类注解"><span class="nav-number">1.2.</span> <span class="nav-text">2). 启动类注解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-application-properties配置"><span class="nav-number">1.3.</span> <span class="nav-text">3). application.properties配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Eureka注册中心实现高可用"><span class="nav-number">2.</span> <span class="nav-text">2. Eureka注册中心实现高可用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-hosts文件配置"><span class="nav-number">2.1.</span> <span class="nav-text">1). hosts文件配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-搭建多个Eureka-server"><span class="nav-number">2.2.</span> <span class="nav-text">2). 搭建多个Eureka server</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-修改Eureka-server服务的application-properties配置"><span class="nav-number">2.3.</span> <span class="nav-text">3). 修改Eureka server服务的application.properties配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-注册服务至Eureka【构建生产者】"><span class="nav-number">3.</span> <span class="nav-text">3. 注册服务至Eureka【构建生产者】</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-pom依赖-1"><span class="nav-number">3.1.</span> <span class="nav-text">1). pom依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-启动类注解-1"><span class="nav-number">3.2.</span> <span class="nav-text">2). 启动类注解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-application-properties配置-1"><span class="nav-number">3.3.</span> <span class="nav-text">3). application.properties配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-基于Ribbon实现服务间调用【构建消费者】"><span class="nav-number">4.</span> <span class="nav-text">4. 基于Ribbon实现服务间调用【构建消费者】</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-pom依赖-2"><span class="nav-number">4.1.</span> <span class="nav-text">1). pom依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-声明RestTemplate"><span class="nav-number">4.2.</span> <span class="nav-text">2). 声明RestTemplate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-利用RestTemplate发起请求"><span class="nav-number">4.3.</span> <span class="nav-text">3). 利用RestTemplate发起请求</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-基于Feign实现服务间调用"><span class="nav-number">5.</span> <span class="nav-text">5. 基于Feign实现服务间调用(*)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-pom依赖-3"><span class="nav-number">5.1.</span> <span class="nav-text">1). pom依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-启动类注解-2"><span class="nav-number">5.2.</span> <span class="nav-text">2). 启动类注解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-创建Feign的客户端接口定义"><span class="nav-number">5.3.</span> <span class="nav-text">3). 创建Feign的客户端接口定义</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -893,6 +812,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
