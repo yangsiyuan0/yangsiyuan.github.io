@@ -8,7 +8,9 @@
 <h2 id="1-master分支"><a href="#1-master分支" class="headerlink" title="1. master分支"></a>1. master分支</h2><ul>
 <li>稳定的可发布版本</li>
 <li>由发布人负责管理(合并操作)</li>
-<li>不允许提交代码、不允许开发<h2 id="2-dev分支"><a href="#2-dev分支" class="headerlink" title="2. dev分支"></a>2. dev分支</h2></li>
+<li>不允许提交代码、不允许开发</li>
+</ul>
+<h2 id="2-dev分支"><a href="#2-dev分支" class="headerlink" title="2. dev分支"></a>2. dev分支</h2><ul>
 <li>不稳定分支，功能完整，允许bug</li>
 <li>原则上不允许直接在dev分支上进行功能开发，必须新建feature分支进行开发</li>
 </ul>
