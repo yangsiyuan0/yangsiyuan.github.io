@@ -1,6 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Git工作流</title>
+    <url>/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/</url>
+    <content><![CDATA[<h1 id="一-分支管理"><a href="#一-分支管理" class="headerlink" title="一.分支管理"></a>一.分支管理</h1><p>开发过程中主要存在以下分支：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- master</span><br><span class="line">- dev</span><br><span class="line">- hotfix-[问题名称][bug编号]</span><br><span class="line">- feature-[功能名称]</span><br><span class="line">- bugfix-[bug编号]</span><br><span class="line">- refactor-[重构名称]</span><br></pre></td></tr></table></figure>
+<h2 id="1-master分支"><a href="#1-master分支" class="headerlink" title="1. master分支"></a>1. master分支</h2><ul>
+<li>稳定的可发布版本</li>
+<li>由发布人负责管理(合并操作)</li>
+<li>不允许提交代码、不允许开发<h2 id="2-dev分支"><a href="#2-dev分支" class="headerlink" title="2. dev分支"></a>2. dev分支</h2></li>
+<li>不稳定分支，功能完整，允许bug</li>
+<li>原则上不允许直接在dev分支上进行功能开发，必须新建feature分支进行开发</li>
+</ul>
+<h2 id="3-hotfix-问题名称-bug编号-分支"><a href="#3-hotfix-问题名称-bug编号-分支" class="headerlink" title="3. hotfix-[问题名称][bug编号]分支"></a>3. hotfix-[问题名称][bug编号]分支</h2><ul>
+<li>从master分支创建，横线后面跟上问题名称或者对应的bug编号，仅仅适用于<strong>生产线问题紧急修复</strong>！！！</li>
+<li>修复完成，测试通过，合并到master和dev分支上，然后将此分支删除</li>
+</ul>
+<h2 id="4-feature-功能名称-分支"><a href="#4-feature-功能名称-分支" class="headerlink" title="4. feature-[功能名称]分支"></a>4. feature-[功能名称]分支</h2><ul>
+<li>从dev分支创建，横线后跟功能名称，用于新功能开发，每天下班前push提交到远程</li>
+<li>开发完成以后，在远程发起向dev分支的合并请求，由指定的CodeReview人员审查通过以后进行合并，并删除该分支</li>
+</ul>
+<h2 id="5-bugfix-bug编号-分支"><a href="#5-bugfix-bug编号-分支" class="headerlink" title="5. bugfix-[bug编号]分支"></a>5. bugfix-[bug编号]分支</h2><ul>
+<li>从dev分支创建，用于修改测试提出的bug，横线后跟bug编号</li>
+<li>修复以后，在远程发起向dev分支的合并请求，并指定提交者自身（或其他人）作为CodeReview，合并以后删除该分支</li>
+</ul>
+<h2 id="6-refactor-重构名称-分支"><a href="#6-refactor-重构名称-分支" class="headerlink" title="6. refactor-[重构名称]分支"></a>6. refactor-[重构名称]分支</h2><ul>
+<li>从dev分支创建，用于代码的<strong>重大规模重构</strong>（小规模重构创建feature分支即可）</li>
+<li>重构以后，必须经过严格测试通过，才能向dev分支合并</li>
+</ul>
+<h1 id="二-Commit提交规范"><a href="#二-Commit提交规范" class="headerlink" title="二. Commit提交规范"></a>二. Commit提交规范</h1><h2 id="1-备注格式"><a href="#1-备注格式" class="headerlink" title="1. 备注格式"></a>1. 备注格式</h2><p>[类型描述]，类型如下图所示</p>
+<table>
+<thead>
+<tr>
+<th align="left">类型</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">feat</td>
+<td align="left">feature,即新开发的功能</td>
+</tr>
+<tr>
+<td align="left">fix</td>
+<td align="left">问题修复</td>
+</tr>
+<tr>
+<td align="left">refactor</td>
+<td align="left">重构代码</td>
+</tr>
+<tr>
+<td align="left">doc</td>
+<td align="left">增加文档(如ReadMe)、注释</td>
+</tr>
+</tbody></table>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">fix:修复身份证含字母X的用户无法注册问题 </span><br><span class="line">fix: 紧急修复生产线用户积分不显示的问题 </span><br><span class="line">feat:商品详情页功能 </span><br><span class="line">doc:增加项目readme文档，修改结算条款结算逻辑的注释</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-提交频率"><a href="#2-提交频率" class="headerlink" title="2. 提交频率"></a>2. 提交频率</h2><ol>
+<li>每天下班前必须提交feature分支，并push到远程</li>
+<li>hotfix、feature、bugfix、refactor分支尽量按照功能点或修复重构的问题及时commit（不要求push）<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/git%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt=""></li>
+</ol>
+]]></content>
+      <categories>
+        <category>git</category>
+      </categories>
+      <tags>
+        <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>服务注册与发现</title>
     <url>/2019/10/23/%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0/</url>
     <content><![CDATA[<h3 id="1-Spring版本说明"><a href="#1-Spring版本说明" class="headerlink" title="1. Spring版本说明"></a>1. Spring版本说明</h3><p>本文档对工业界常用的服务治理框架、及其对应的技术栈进行预研。相关技术栈均基于JDK + Spring生态，因此在探索具体的服务治理框架之前，我们需要先对jdk、spring、springBoot、springCloud的相关版本进行相关梳理及选定：</p>
