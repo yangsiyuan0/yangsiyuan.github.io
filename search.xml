@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>服务注册与发现</title>
+    <url>/2019/10/23/%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0/</url>
+    <content><![CDATA[<h3 id="1-Spring版本说明"><a href="#1-Spring版本说明" class="headerlink" title="1. Spring版本说明"></a>1. Spring版本说明</h3><p>本文档对工业界常用的服务治理框架、及其对应的技术栈进行预研。相关技术栈均基于JDK + Spring生态，因此在探索具体的服务治理框架之前，我们需要先对jdk、spring、springBoot、springCloud的相关版本进行相关梳理及选定：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Spring Framework</th>
+<th align="left">springBoot</th>
+<th align="left">springCloud</th>
+<th align="left">JDK</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Spring Framework 4.3.7.RELEASE</td>
+<td align="left">1.5.2.RELEASE</td>
+<td align="left">Dalston.RC1</td>
+<td align="left">JDK6-8</td>
+</tr>
+<tr>
+<td align="left">Spring Framework 4.3.13.RELEASE</td>
+<td align="left">1.5.9.RELEASE</td>
+<td align="left">Edgware.RELEASE</td>
+<td align="left">JDK6-8</td>
+</tr>
+<tr>
+<td align="left">Spring Framework 5.0.6.RELEASE</td>
+<td align="left">2.0.2.RELEASE</td>
+<td align="left">Finchley.BUILD-SNAPSHOT</td>
+<td align="left">JDK8-10</td>
+</tr>
+<tr>
+<td align="left"><strong>Spring Framework 5.0.7.RELEASE</strong></td>
+<td align="left"><strong>2.0.3.RELEASE</strong></td>
+<td align="left"><strong>Finchley.RELEASE</strong></td>
+<td align="left"><strong>JDK8-10</strong></td>
+</tr>
+<tr>
+<td align="left">Spring Framework 5.1.2.RELEASE</td>
+<td align="left">2.1.x.RELEASE**</td>
+<td align="left">Greenwich</td>
+<td align="left">JDK8-12</td>
+</tr>
+<tr>
+<td align="left">Spring Framework 5.*</td>
+<td align="left">2.2.x.RELEASE</td>
+<td align="left">Hoxton</td>
+<td align="left">JDK8-12</td>
+</tr>
+</tbody></table>
+<p>根据spring官方说明，<code>Spring Framework 5.1.*为目前的推荐版本</code>，对该版本的官方支持将持续到2019年底，而后将由5.2.<em>版本取代，而就springCloud的生态演进而言，Finchley版本相较于Dalston，有了极大的丰富与优化。<br>因此，本文档相关技术栈均基于*</em>SpringCloud Finchley**版本</p>
+<blockquote>
+<p><strong>关于SpringBoot的版本时间线如下：</strong></p>
+<ul>
+<li>2014年04月01号，Spring Boot 发布 v1.0.0.RELEASE，Spring Boot 正式商用</li>
+<li>2014年06月11号，Spring Boot 发布 v1.1.0.RELEASE，主要修复了若干 Bug</li>
+<li>2014年12月11号，Spring Boot 发布 v1.2.0.RELEASE，此版本更新的特性比较多，主要集成了 Servlet 3.1，支持 JTA、J2EE 等。</li>
+<li>2015年11月16号，Spring Boot 发布 v1.3.0.RELEASE，增加了新 spring-boot-devtools 模块，缓存自动配置、颜色 banners 等新特性。</li>
+<li>2016年07月29号，Spring Boot 发布 v1.4.0.RELEASE，以 Spring 4.3 为基础进行的构建，更新了很多第三方库的支持，重点增加了 Neo4J, Couchbase、 Redis 等 Nosql 的支持。</li>
+<li>2017年01月30号，Spring Boot 发布 v1.5.0.RELEASE，更新了动态日志修改，增加 Apache Kafka、LDAP、事物管理等特性的支持。</li>
+<li>2018年03月01号，Spring Boot 发布 v2.0.0.RELEASE</li>
+<li>2018年10月30号，Spring Boot 发布 v2.1.0.RELEASE</li>
+</ul>
+</blockquote>
+<h3 id="2-CAP原则"><a href="#2-CAP原则" class="headerlink" title="2. CAP原则"></a>2. CAP原则</h3><p>CAP原则又称CAP定理(1998年由加州大学的计算机科学家 Eric Brewer 提出)，指的是在一个分布式系统中有三个指标：一致性（Consistency）、可用性（Availability）、分区容错性（Partition tolerance）</p>
+<p>CAP 原则指的是，<code>这三个指标最多只能同时实现两点，不可能三者兼顾</code></p>
+<ul>
+<li><strong>一致性（C）</strong>：在分布式系统中的所有数据备份，在同一时刻是否同样的值。（等同于所有节点访问同一份最新的数据副本）</li>
+<li><strong>可用性（A）</strong>：在集群中一部分节点故障后，集群整体是否还能响应客户端的读写请求。（对数据更新具备高可用性）</li>
+<li><strong>分区容忍性（P）</strong>：以实际效果而言，分区相当于对通信的时限要求。系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择【分区由网络故障、机器故障导致，具有外部不可抗力性，无法控制，是必选项】。</li>
+</ul>
+<p><strong>即：设计分布式数据系统，就是在一致性和可用性之间取一个平衡</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">组件名</th>
+<th align="left">CAP</th>
+<th align="left">一致性算法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Eureka</td>
+<td align="left">AP</td>
+<td align="left">无</td>
+</tr>
+<tr>
+<td align="left">Consul</td>
+<td align="left">CP</td>
+<td align="left">Raft</td>
+</tr>
+<tr>
+<td align="left">Zookeeper</td>
+<td align="left">CP</td>
+<td align="left">Paxos</td>
+</tr>
+<tr>
+<td align="left">etcd</td>
+<td align="left">CP</td>
+<td align="left">Raft</td>
+</tr>
+<tr>
+<td align="left">nacos</td>
+<td align="left">AP</td>
+<td align="left">Raft</td>
+</tr>
+</tbody></table>
+<h2 id="二-常用服务治理框架"><a href="#二-常用服务治理框架" class="headerlink" title="二.常用服务治理框架"></a>二.常用服务治理框架</h2><h3 id="1-Eureka"><a href="#1-Eureka" class="headerlink" title="1. Eureka(*)"></a>1. Eureka(*)</h3><p>Eureka是Netflix开发的服务发现框架，本身是一个基于REST的服务，SpringCloud将它集成在其子项目spring-cloud-netflix中，以实现SpringCloud的服务发现功能。其也是<strong>目前使用最广泛的服务发现框架</strong>。<br>Eureka包含两个组件：Eureka Server(<code>即服务端，注册中心</code>)和Eureka Client(<code>即客户端，服务提供者/消费者</code>)</p>
+<ol>
+<li>服务提供者在启动时，向注册中心注册自己提供的服务。</li>
+<li>服务消费者在启动时，向注册中心订阅自己所需的服务。</li>
+<li>注册中心返回服务提供者地址给消费者。</li>
+<li>服务消费者从提供者地址中调用消费者<br><img src="en-resource://database/5773:1" alt="d810ebfac7c63d66515eec9ae47d5eae.png"></li>
+</ol>
+<h3 id="2-Consul"><a href="#2-Consul" class="headerlink" title="2. Consul"></a>2. Consul</h3><p>Spring Cloud Consul项目是针对Consul的服务治理实现。Consul 是 HashiCorp 公司推出的开源工具，用于实现分布式系统的服务发现与配置，它包含多个组件，但是作为一个整体，在微服务架构中为我们的基础设施提供服务发现和服务配置的工具。</p>
+<ul>
+<li>使用Go语言编写，支持win、linux、mac全平台</li>
+<li>Consul和Eureka不同，Eureka只需要在项目中加入服务端依赖，就可以作为服务端使用；Consul需要从官网下载，并单独安装</li>
+<li>Consul服务器使用 Raft 协议(<code>要求必须过半数的节点都写入成功才认为注册成功 Leader 挂掉时，重新选举期间整个 Consul 不可用</code>)复制状态，保证了强一致性。相较于Eurake，高可用及效率均有损失。</li>
+</ul>
+<p><img src="en-resource://database/5767:1" alt="d6a016b0ac5ee80914c24f1799beaafd.png"></p>
+<h3 id="3-Dubbo-Zookeeper"><a href="#3-Dubbo-Zookeeper" class="headerlink" title="3. Dubbo+Zookeeper"></a>3. Dubbo+Zookeeper</h3><p>Dubbo是一个由阿里巴巴开源的分布式服务框架，提供面向接口的远程方法调用(RPC)，智能容错和负载均衡，以及服务自动注册和发现等功能，其直接使用socket通信。传输效率高。Dubbo主要作用是提供服务治理<br>ZooKeeper是一个开源的分布式协调服务，为分布式应用提供配置维护、域名服务、分布式同步、组服务等功能。ZooKeeper是Dubbo的推荐注册中心，提供服务注册功能（<code>Dubbo也还可以搭配其他注册中心：Multicast注册中、Redis注册中心、Simple注册中心</code>）</p>
+<p><em>PS：最新Spring社区孵化的Spring Cloud Alibaba，默认选用了Nacos作为注册中心，可以更加便捷地使用Ribbon或Feign来实现服务消费</em></p>
+<h3 id="4-Nacos"><a href="#4-Nacos" class="headerlink" title="4. Nacos"></a>4. Nacos</h3><p>Nacos是由阿里巴巴开源的动态服务发现、配置管理和服务管理平台。Nacos提供了如下关键特性：服务发现和服务健康监测、动态配置服务、动态 DNS 服务、服务及其元数据管理。<br>和Consul一样，Nacos也需要从官网下载服务，进行单独启动<br><code>下图为Nacos官网提供的架构图：</code><br><img src="en-resource://database/5769:1" alt="352af1f2eb7fbf5f65e869893ac99633.png"></p>
+<h3 id="5-etcd"><a href="#5-etcd" class="headerlink" title="5. etcd"></a>5. etcd</h3><p>etcd是一个采用http协议的分布式键值对存储系统，因其易用，简单。很多系统都采用或支持etcd作为服务发现的一部分，比如kubernetes。但其只是一个存储系统，如果想要提供完整的服务发现功能，必须搭配一些第三方的工具，搭建操作相对麻烦。</p>
+<h3 id="6-SpringCloud-Alibaba"><a href="#6-SpringCloud-Alibaba" class="headerlink" title="6. SpringCloud Alibaba"></a>6. SpringCloud Alibaba</h3><p>SpringCloud Alibaba作为一款<code>旨在打造更符合中国国情的微服务体系</code>的开源组件，目前主要提供了服务发现、配置管理、高可用防护、基于RocketMQ的消息中间件等功能。其既提供了基于Nacos+Ribbon/Feign的服务治理方案，又支持基于Nacos+Dubbo的rpc服务治理方案。<br><code>下图nacas启动后的管理界面:</code></p>
+<h2 id="三-Eureka项目实践"><a href="#三-Eureka项目实践" class="headerlink" title="三. Eureka项目实践"></a>三. Eureka项目实践</h2><h3 id="1-Eureka注册中心搭建-单机"><a href="#1-Eureka注册中心搭建-单机" class="headerlink" title="1. Eureka注册中心搭建(单机)"></a>1. Eureka注册中心搭建(单机)</h3><h4 id="1-pom依赖"><a href="#1-pom依赖" class="headerlink" title="1). pom依赖"></a>1). pom依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--eureka依赖【Springboot1.x中 artifactId 为 spring-cloud-starter-netflix-eureka-server，注意区分】--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-server<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-启动类注解"><a href="#2-启动类注解" class="headerlink" title="2). 启动类注解"></a>2). 启动类注解</h4><p>通过在启动类上添加注解<code>@EnableEurekaServer</code>，为该应用开启注册中心功能</p>
+<h4 id="3-application-properties配置"><a href="#3-application-properties配置" class="headerlink" title="3). application.properties配置"></a>3). application.properties配置</h4><figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名称</span></span><br><span class="line"><span class="string">spring.application.name=NewsEditingSuitCenter</span></span><br><span class="line"><span class="comment"># 服务端口号</span></span><br><span class="line"><span class="string">server.port=1111</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#主机名</span></span><br><span class="line"><span class="string">eureka.instance.hostname=eureka1</span></span><br><span class="line"><span class="comment">#服务名，默认取spring.application.name 配置值，没有则显示unknown</span></span><br><span class="line"><span class="comment">#eureka.instance.appname=NewsEditingSuitCenter</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#注册时显示ip【即在eureka管理页面显示的格式为ip地址】</span></span><br><span class="line"><span class="string">eureka.instance.prefer-ip-address=false</span></span><br><span class="line"><span class="comment">#注册时显示ip的配置方案【spring.cloud.client.ip-address即为本机ip】</span></span><br><span class="line"><span class="comment">#eureka.instance.prefer-ip-address=true</span></span><br><span class="line"><span class="comment">#eureka.instance.hostname=$&#123;spring.cloud.client.ip-address&#125;</span></span><br><span class="line"><span class="comment">#eureka.instance.instance-id=$&#123;spring.cloud.client.ip-address&#125;:$&#123;server.port&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#表示是否将自己注册在EurekaServer上，默认为true。由于当前应用就是EurekaServer，所以置为false</span></span><br><span class="line"><span class="string">eureka.client.register-with-eureka=false</span></span><br><span class="line"><span class="comment">#表示表示是否从EurekaServer获取注册信息，默认为true。单节点不需要同步其他的EurekaServer节点的数据</span></span><br><span class="line"><span class="string">eureka.client.fetch-registry=false</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#eureka server地址</span></span><br><span class="line"><span class="string">eureka.client.serviceUrl.defaultZone=http://$&#123;eureka.instance.hostname&#125;:$&#123;server.port&#125;/eureka/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#关闭自我保护(生产时打开该选项)</span></span><br><span class="line"><span class="comment">#如果在15分钟内超过85%的客户端节点都没有正常的心跳，那么Eureka就认为客户端与注册中心出现了网络故障，Eureka Server自动进入自我保护机制</span></span><br><span class="line"><span class="comment">#1. 不再从注册列表中移除因为长时间没收到心跳而应该过期的服务、</span></span><br><span class="line"><span class="comment">#2. 仍然能够接受新服务的注册和查询请求，但是不会被同步到其它节点、</span></span><br><span class="line"><span class="comment">#3. 当网络稳定时，当前Eureka Server新的注册信息会被同步到其它节点中</span></span><br><span class="line"><span class="string">eureka.server.enable-self-preservation=false</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#扫描失效服务的间隔时间（缺省为60*1000ms）</span></span><br><span class="line"><span class="string">eureka.server.eviction-interval-timer-in-ms=5000</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Eureka注册中心实现高可用"><a href="#2-Eureka注册中心实现高可用" class="headerlink" title="2. Eureka注册中心实现高可用"></a>2. Eureka注册中心实现高可用</h3><p>运行多个Eureka server实例，并进行互相注册即可实现注册中心的高可用<br>Eureka不允许在单台主机(即同一个ip)上搭建高可用服务，可以利用本机hosts文件构造本地域名来模拟多机，下述过程即是采用该方式进行搭建</p>
+<h4 id="1-hosts文件配置"><a href="#1-hosts文件配置" class="headerlink" title="1). hosts文件配置"></a>1). hosts文件配置</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">127.0.0.1 eureka1</span><br><span class="line">127.0.0.1 eureka2</span><br><span class="line">127.0.0.1 eureka3</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-搭建多个Eureka-server"><a href="#2-搭建多个Eureka-server" class="headerlink" title="2). 搭建多个Eureka server"></a>2). 搭建多个Eureka server</h4><p>将上文”<code>1. Eureka注册中心搭建(单机)</code>“中搭建的项目，复制多个即可</p>
+<h4 id="3-修改Eureka-server服务的application-properties配置"><a href="#3-修改Eureka-server服务的application-properties配置" class="headerlink" title="3). 修改Eureka server服务的application.properties配置"></a>3). 修改Eureka server服务的application.properties配置</h4><ul>
+<li>节点1配置</li>
+</ul>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名称</span></span><br><span class="line"><span class="string">spring.application.name=NewsEditingSuitCenter</span></span><br><span class="line"><span class="comment"># 服务端口号</span></span><br><span class="line"><span class="string">server.port=1111</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#主机名</span></span><br><span class="line"><span class="string">eureka.instance.hostname=eureka1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#是否将自己注册在EurekaServer上</span></span><br><span class="line"><span class="string">eureka.client.register-with-eureka=true</span></span><br><span class="line"><span class="comment">#是否从EurekaServer获取注册信息，多节点需要同步其他的EurekaServer节点的数据</span></span><br><span class="line"><span class="string">eureka.client.fetch-registry=true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#eureka server地址【指向其他节点地址】</span></span><br><span class="line"><span class="string">eureka.client.serviceUrl.defaultZone=http://eureka2:1112/eureka/,http://eureka3:1113/eureka/</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>节点2配置</li>
+</ul>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名称</span></span><br><span class="line"><span class="string">spring.application.name=NewsEditingSuitCenter</span></span><br><span class="line"><span class="comment"># 服务端口号</span></span><br><span class="line"><span class="string">server.port=1112</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#主机名</span></span><br><span class="line"><span class="string">eureka.instance.hostname=eureka2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#是否将自己注册在EurekaServer上</span></span><br><span class="line"><span class="string">eureka.client.register-with-eureka=true</span></span><br><span class="line"><span class="comment">#是否从EurekaServer获取注册信息，多节点需要同步其他的EurekaServer节点的数据</span></span><br><span class="line"><span class="string">eureka.client.fetch-registry=true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#eureka server地址【指向其他节点地址】</span></span><br><span class="line"><span class="string">eureka.client.serviceUrl.defaultZone=http://eureka2:1112/eureka/,http://eureka3:1113/eureka/</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>节点3配置</li>
+</ul>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名称</span></span><br><span class="line"><span class="string">spring.application.name=NewsEditingSuitCenter</span></span><br><span class="line"><span class="comment"># 服务端口号</span></span><br><span class="line"><span class="string">server.port=1113</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#主机名</span></span><br><span class="line"><span class="string">eureka.instance.hostname=eureka3</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#是否将自己注册在EurekaServer上</span></span><br><span class="line"><span class="string">eureka.client.register-with-eureka=true</span></span><br><span class="line"><span class="comment">#是否从EurekaServer获取注册信息，多节点需要同步其他的EurekaServer节点的数据</span></span><br><span class="line"><span class="string">eureka.client.fetch-registry=true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#eureka server地址【指向其他节点地址】</span></span><br><span class="line"><span class="string">eureka.client.serviceUrl.defaultZone=http://eureka1:1111/eureka/,http://eureka2:1112/eureka/</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="3-注册服务至Eureka【构建生产者】"><a href="#3-注册服务至Eureka【构建生产者】" class="headerlink" title="3. 注册服务至Eureka【构建生产者】"></a>3. 注册服务至Eureka【构建生产者】</h3><p>此步骤，即将现有的快融服务注册到Eureka注册中心</p>
+<h4 id="1-pom依赖-1"><a href="#1-pom依赖-1" class="headerlink" title="1). pom依赖"></a>1). pom依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- eureka client 适配springboot1.*--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--&lt;dependency&gt;            </span></span><br><span class="line"><span class="comment">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;            </span></span><br><span class="line"><span class="comment">    &lt;artifactId&gt;spring-cloud-starter-eureka&lt;/artifactId&gt;       </span></span><br><span class="line"><span class="comment">&lt;/dependency&gt;  --&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- eureka client 适配springboot2*--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span>   </span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-<span class="tag">&lt;<span class="name">u</span>&gt;</span>netflix<span class="tag">&lt;/<span class="name">u</span>&gt;</span>-<span class="tag">&lt;<span class="name">u</span>&gt;</span>eureka<span class="tag">&lt;/<span class="name">u</span>&gt;</span>-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-启动类注解-1"><a href="#2-启动类注解-1" class="headerlink" title="2). 启动类注解"></a>2). 启动类注解</h4><p>通过在启动类上添加注解`@EnableDiscoveryClient，激活Eureka中的DiscoveryClient实现，这样才能实现Controller中对服务信息的输出</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@EnableDiscoveryClient</span></span><br><span class="line"><span class="meta">@EnableAsync</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@ServletComponentScan</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@MapperScan</span>(<span class="string">"com.dayang.portal.db.dao"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-application-properties配置-1"><a href="#3-application-properties配置-1" class="headerlink" title="3). application.properties配置"></a>3). application.properties配置</h4><figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名称</span></span><br><span class="line"><span class="string">spring.application.name=dyportalserver</span></span><br><span class="line"><span class="comment"># 服务端口号</span></span><br><span class="line"><span class="string">server.port=9001</span></span><br><span class="line"><span class="comment">#eureka server地址</span></span><br><span class="line"><span class="string">eureka.client.serviceUrl.defaultZone=http://eureka1:1111/eureka/</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>进阶配置</li>
+</ul>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">#状态页面的URL，相对路径,默认值是/info【https需要使用绝对路径配置eureka.instance.status-page-url】</span></span><br><span class="line"><span class="string">eureka.instance.status-page-url-path=$&#123;server.servlet.context-path&#125;/actuator/info</span></span><br><span class="line"><span class="comment">#健康检查页面的URL，相对路径,默认值是/health【https需要使用绝对路径配置eureka.instance.health-check-url】</span></span><br><span class="line"><span class="string">eureka.instance.health-check-url-path=$&#123;server.servlet.context-path&#125;/acturtor/health</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#该实例的主页url,相对路径【绝对路径：eureka.instance.home-page-url】</span></span><br><span class="line"><span class="comment">#eureka.instance.home-page-url-path=$&#123;server.servlet.context-path&#125;</span></span><br><span class="line"><span class="comment">#是否注册为服务</span></span><br><span class="line"><span class="string">eureka.client.register-with-eureka=true</span></span><br><span class="line"><span class="comment">#是否检索服务</span></span><br><span class="line"><span class="string">eureka.client.fetch-registry=true</span></span><br><span class="line"><span class="comment">############# 续约配置  ##############</span></span><br><span class="line"><span class="comment"># 心跳时间，即服务续约间隔时间（缺省为30s）</span></span><br><span class="line"><span class="string">eureka.instance.lease-renewal-interval-in-seconds=5</span></span><br><span class="line"><span class="comment"># 发呆时间，即服务续约到期时间（缺省为90s）</span></span><br><span class="line"><span class="string">eureka.instance.lease-expiration-duration-in-seconds=10</span></span><br><span class="line"><span class="comment"># 开启健康检查（依赖spring-boot-starter-actuator）</span></span><br><span class="line"><span class="string">eureka.client.healthcheck.enabled=true</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-基于Ribbon实现服务间调用【构建消费者】"><a href="#4-基于Ribbon实现服务间调用【构建消费者】" class="headerlink" title="4. 基于Ribbon实现服务间调用【构建消费者】"></a>4. 基于Ribbon实现服务间调用【构建消费者】</h3><p>Spring Cloud Ribbon是基于基于HTTP和TCP的客户端负载均衡的工具(<code>基于Netflix Ribbon实现</code>)，它被集成在springCloud的基础设施中，并不需要独立部署(简而言之，引入依赖开启配置即可使用)</p>
+<p><strong>客户端负载均衡：</strong><br><code>区别于基于F5(硬件)、nginx(软件)等实现的服务端负载均衡，是将服务清单维护在服务端，按照算法进行请求分发；
+客户端负载均衡，是由客户端(即服务消费者)自行维护服务节点清单【从Eureka server获取】，由客户端自行选择请求节点</code></p>
+<pre><code>Ribbon实现客户端负载均衡的方式，是通过在客户端中配置ribbonServerList来设置服务端列表去轮询访问以达到均衡负载的作用。Ribbon与Eureka联合使用时，ribbonServerList会被DiscoveryEnabledNIWSServerList重写，扩展成从Eureka注册中心中获取服务实例列表。同时它也会用NIWSDiscoveryPing来取代IPing，它将职责委托给Eureka来确定服务端是否已经启动。(相应的，当Ribbon与Consul联合使用时，ribbonServerList会被ConsulServerList来扩展成从Consul获取服务实例列表。同时由ConsulPing来作为IPing接口的实现)</code></pre><h4 id="1-pom依赖-2"><a href="#1-pom依赖-2" class="headerlink" title="1). pom依赖"></a>1). pom依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span>        </span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span>        </span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-ribbon<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span>    </span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-声明RestTemplate"><a href="#2-声明RestTemplate" class="headerlink" title="2). 声明RestTemplate"></a>2). 声明RestTemplate</h4><p>通过显示地声明一个RestTemplate对象，并添加注解<code>@LoadBalanced</code>，开启客户端负载均衡</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@EnableDiscoveryClient</span></span><br><span class="line"><span class="meta">@SpringBootApplicationpublic</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;       </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;            </span><br><span class="line">    <span class="keyword">new</span> SpringApplicationBuilder(Application.class).web(<span class="keyword">true</span>).run(args);     </span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">     <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Description</span>: Spring Boot &gt;= 1.4版本，RestTemplate不再自动声明</span></span><br><span class="line"><span class="comment">     * 【<span class="doctag">@LoadBalanced</span>用于开启LoadBalancerInterceptor，实现通过服务名实现调用】</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@LoadBalanced</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RestTemplate <span class="title">restTemplate</span><span class="params">(RestTemplateBuilder </span></span></span><br><span class="line"><span class="function"><span class="params">builder)</span> </span>&#123;</span><br><span class="line">       <span class="comment">// Do any additional configuration here</span></span><br><span class="line">       <span class="keyword">return</span> builder.build();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="3-利用RestTemplate发起请求"><a href="#3-利用RestTemplate发起请求" class="headerlink" title="3). 利用RestTemplate发起请求"></a>3). 利用RestTemplate发起请求</h4><p>RestTemplate是Spring提供的用于访问Rest服务的客户端，RestTemplate提供了多种便捷访问远程Http服务的方法。相较于我们目前使用的HTTPClient，大大提高客户端的编写效率。</p>
+<p><code>关于httpClient、OkHttpClient、RestTemplate三者的比较，可以参见</code><a href="https://stackoverflow.com/questions/53795268/should-i-use-httpurlconnection-or-resttemplate" target="_blank" rel="noopener">HttpUrlConnection VS RestTemplate</a></p>
+<blockquote>
+<p><strong>RestTemplate常用API：</strong></p>
+<ul>
+<li>getForEntity(String url, Class<T> responseType, Object… uriVariables)</li>
+<li>getForEntity(URI url, Class<T> responseType)</li>
+<li>getForObject(String url, Class<T> responseType, Object… uriVariables)</li>
+<li>getForObject(URI url, Class<T> responseType)</li>
+<li>postForObject(URI url, @Nullable Object request, Class<T> responseType)</li>
+<li>postForObject(String url, @Nullable Object request, Class<T> responseType, Object… uriVariables)</li>
+<li>postForObject(String url, @Nullable Object request, Class<T> responseType,Map&lt;String, ?&gt; uriVariables)</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>GET请求样例【手动获取实例地址】</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 获取restTemplate对象</span></span><br><span class="line"><span class="meta">@Autowired</span>    </span><br><span class="line">LoadBalancerClient loadBalancerClient;    </span><br><span class="line"><span class="meta">@Autowired</span>    </span><br><span class="line">RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取服务地址</span></span><br><span class="line">ServiceInstance serviceInstance = loadBalancerClient.choose(<span class="string">"eureka-client"</span>);        </span><br><span class="line">String url = <span class="string">"http://"</span> + serviceInstance.getHost() + <span class="string">":"</span> + serviceInstance.getPort();</span><br><span class="line"><span class="comment">//第一个参数表示服务地址：dyportalserver为在Eureka中注册的服务名</span></span><br><span class="line"><span class="comment">//第二个参数表示返回值类型</span></span><br><span class="line"><span class="comment">//后续为可变参数，分别替换请求路径中的占位符变量</span></span><br><span class="line">String name = restTemplate.getForObject(url + <span class="string">"/test?name=&#123;1&#125;"</span>, String.class, <span class="string">"智新测试"</span>);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>POST请求样例【自动获取实例地址】</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span>    </span><br><span class="line">RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line"><span class="comment">//第一个参数表示服务地址：dyportalserver为在Eureka中注册的服务名</span></span><br><span class="line"><span class="comment">//第二个参数表示返回值类型</span></span><br><span class="line">CloudType cloudType = S.getForObject(<span class="string">"http://dyportalserver/UserInfoController/getCloudType"</span>, CloudType.class);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>POST请求样例 【上面是理想转态，下面才是现实】</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span>    </span><br><span class="line">RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getCloudType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 返回json封装的数据</span></span><br><span class="line">      String res = restTemplate.postForObject(<span class="string">"http://"</span> + serviceName + contextPath +Constants_portal.CLOUDTYPE_ADDRESS_SUFFIX, <span class="keyword">null</span>, String.class);</span><br><span class="line">  <span class="comment">// 利用TypeToken对带泛型的对象进行反序列化</span></span><br><span class="line">      Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;CloudType&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">      XtcpCommonReponse&lt;CloudType&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">      logger.debug(<span class="string">"CloudType: "</span> + response.getData());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>POST请求样例【带参数】</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span>    </span><br><span class="line">RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getParameter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//构造请求头</span></span><br><span class="line">      HttpHeaders headers = <span class="keyword">new</span> HttpHeaders();</span><br><span class="line">      headers.add(<span class="string">"userId"</span>, <span class="string">"admin"</span>);</span><br><span class="line">      headers.add(<span class="string">"tenantId"</span>, <span class="string">"dayang.com"</span>);</span><br><span class="line">      headers.add(<span class="string">"token"</span>, <span class="string">"token"</span>);</span><br><span class="line">      headers.setContentType(MediaType.MULTIPART_FORM_DATA);</span><br><span class="line">      <span class="comment">//构造请求体</span></span><br><span class="line">      MultiValueMap&lt;String, String&gt; map = <span class="keyword">new</span> LinkedMultiValueMap&lt;&gt;();</span><br><span class="line">      map.add(<span class="string">"parameterCode"</span>,<span class="string">"PUB_CRECRE"</span>);</span><br><span class="line">      HttpEntity&lt;MultiValueMap&lt;String, String&gt;&gt; formEntity = <span class="keyword">new</span> HttpEntity&lt;&gt;(map, headers);</span><br><span class="line">      <span class="comment">//发起请求</span></span><br><span class="line">      String res = restTemplate.postForObject(<span class="string">"http://"</span> + serviceName + contextPath + Constants_portal.PARAMETER_QUERY_ADDRESS_SUFFIX, formEntity, String.class);</span><br><span class="line">      <span class="comment">// 处理返回值</span></span><br><span class="line">      Type typeToken = <span class="keyword">new</span> </span><br><span class="line">TypeToken&lt;XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">      XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">      List&lt;CcsParameter&gt; parameterList = response.getData();</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-基于Feign实现服务间调用"><a href="#5-基于Feign实现服务间调用" class="headerlink" title="5. 基于Feign实现服务间调用(*)"></a>5. 基于Feign实现服务间调用(*)</h3><p>Spring Cloud Feign是一套基于Netflix Feign实现的<strong>声明式</strong>服务调用客户端，只需要通过创建接口并用注解来配置它既可完成对Web服务接口的绑定。同时还整合了Ribbon和Eureka来提供均衡负载的HTTP客户端实现</p>
+<p>另外，Feign同时整合了Hystrix功能，支持服务容错保护</p>
+<h4 id="1-pom依赖-3"><a href="#1-pom依赖-3" class="headerlink" title="1). pom依赖"></a>1). pom依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span>        </span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span>        </span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-feign<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span>    </span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-启动类注解-2"><a href="#2-启动类注解-2" class="headerlink" title="2). 启动类注解"></a>2). 启动类注解</h4><p>通过在启动类上添加注解<code>@EnableFeignClients</code>，开启扫描Spring Cloud Feign客户端的功能</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@EnableFeignClients</span></span><br><span class="line"><span class="meta">@EnableDiscoveryClient</span></span><br><span class="line"><span class="meta">@SpringBootApplicationpublic</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;       </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;            </span><br><span class="line">    <span class="keyword">new</span> SpringApplicationBuilder(Application.class).web(<span class="keyword">true</span>).run(args);     </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-创建Feign的客户端接口定义"><a href="#3-创建Feign的客户端接口定义" class="headerlink" title="3). 创建Feign的客户端接口定义"></a>3). 创建Feign的客户端接口定义</h4><p>Feign提供的是声明式的服务绑定功能，即使用<code>@FeignClient</code>注解即可实现对服务的绑定</p>
+<ul>
+<li><strong>构造Feign客户端</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 通过注解将该接口与门户后端服务进行绑定【服务名不区分大小写】</span></span><br><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"dyportalserver"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DypotalClient</span> </span>&#123;    </span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用mvc注解绑定具体的REST接口【不带参数】</span></span><br><span class="line">     <span class="meta">@PostMapping</span>(<span class="string">"dyportalserver/UserInfoController/getCloudType"</span>) </span><br><span class="line">     <span class="function"><span class="keyword">public</span> String <span class="title">getCloudType</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用mvc注解绑定具体的REST接口【带参数】</span></span><br><span class="line">     <span class="meta">@PostMapping</span>(<span class="string">"dyportalserver/ParameterController/getParameter"</span>) </span><br><span class="line">     <span class="function"><span class="keyword">public</span> String <span class="title">getParameter</span><span class="params">(@RequestHeader(<span class="string">"tenantId"</span>)</span> String tenantId, @<span class="title">RequestHeader</span><span class="params">(<span class="string">"userId"</span>)</span> String userId, @<span class="title">RequestHeader</span><span class="params">(<span class="string">"token"</span>)</span> String token, @<span class="title">RequestParam</span><span class="params">(<span class="string">"parameterCode"</span>)</span> String parameterCode)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>调用Feign客户端</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 注入Feign客户端</span></span><br><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> FeignClientUtil feignClientUtil;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getCloudTypeFeign</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   String res = feignClientUtil.getCloudType();</span><br><span class="line">   Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;CloudType&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">   XtcpCommonReponse&lt;CloudType&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getParameterFeign</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String res = feignClientUtil.getParameter(<span class="string">"dayang.com"</span>, <span class="string">"admin"</span>, <span class="string">"token"</span>, <span class="string">"PUB_CRECAS"</span>);</span><br><span class="line">    Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">    XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">    List&lt;CcsParameter&gt; parameterList = response.getData();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>SpringCloud</tag>
+      </tags>
+  </entry>
+</search>
