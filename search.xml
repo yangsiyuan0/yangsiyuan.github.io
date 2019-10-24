@@ -214,8 +214,15 @@
 <li><strong>调用Feign客户端</strong></li>
 </ul>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 注入Feign客户端</span></span><br><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> FeignClientUtil feignClientUtil;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getCloudTypeFeign</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   String res = feignClientUtil.getCloudType();</span><br><span class="line">   Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;CloudType&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">   XtcpCommonReponse&lt;CloudType&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getParameterFeign</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String res = feignClientUtil.getParameter(<span class="string">"dayang.com"</span>, <span class="string">"admin"</span>, <span class="string">"token"</span>, <span class="string">"PUB_CRECAS"</span>);</span><br><span class="line">    Type typeToken = <span class="keyword">new</span> TypeToken&lt;XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt;&gt;()&#123;&#125;.getType();</span><br><span class="line">    XtcpCommonReponse&lt;List&lt;CcsParameter&gt;&gt; response = <span class="keyword">new</span> Gson().fromJson(res, typeToken);</span><br><span class="line">    List&lt;CcsParameter&gt; parameterList = response.getData();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>SpringCloud</category>
+      </categories>
       <tags>
         <tag>SpringCloud</tag>
+        <tag>Eureka</tag>
+        <tag>Feign</tag>
+        <tag>Ribbon</tag>
+        <tag>微服务</tag>
       </tags>
   </entry>
 </search>
