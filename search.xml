@@ -71,6 +71,308 @@
       </tags>
   </entry>
   <entry>
+    <title>Maven</title>
+    <url>/2019/10/24/Maven/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>To Do</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 聚合与继承<ul>
+<li><code>对于聚合模块来说，它知道有哪些被聚合的模块，但那些被聚合的模块不知道这个聚合模块的存在</code></li>
+<li><code>对于继承关系的父 POM来说，它不知道有哪些子模块继承与它，但那些子模块都必须知道自己的父 POM是什么</code></li>
+<li><code>聚合 POM与继承关系中的父POM的 packaging都是pom</code></li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="http://yongpoliu.com/snapshot-vs-release/" target="_blank" rel="noopener">SNAPSHOT与RELEASE版本之争</a><ul>
+<li><code>NAPSHOT依赖泛指以-SNAPSHOT为结尾的版本号</code></li>
+<li><code>所有非-SNAPSHOT结尾的版本号则都被认定为RELEASE版本，即正式版</code></li>
+<li><code>在开发期间，一般使用SNAPSHOT，在生产期间，更多地依赖RELEASE版本模块</code></li>
+</ul>
+</li>
+<li>私服访问<a href="http://localhost:8081弹框：正在请求您的用户名和密码。该网站称：“XDB”" target="_blank" rel="noopener">http://localhost:8081弹框：正在请求您的用户名和密码。该网站称：“XDB”</a><br><code>oracle安装过程中默认安装了XDB数据库，占用了8081端口，端口冲突</code></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一-Maven简介"><a href="#一-Maven简介" class="headerlink" title="一. Maven简介"></a>一. Maven简介</h2><blockquote>
+<p>Maven 是apache下的开源项目，项目管理工具，管理 java 项目</p>
+<ul>
+<li>项目对象模型 (Project Object Model)<br><code>POM对象模型，每个maven工程中都有一个pom.xml文件，定义工程所依赖的jar包、本工程的坐标、打包运行方式</code></li>
+<li>依赖管理系统（基础核心 )<br><code>maven 通过坐标对项目工程所依赖的jar包统一规范管理</code></li>
+<li>maven 定义一套项目生命周期<br><code>清理、初始化、编译、测试、报告 、打包、部署、站点生成</code></li>
+<li>一组标准集合<br><code>强调：maven工程有自己标准的工程目录结构、定义坐标有标准</code></li>
+<li>maven 管理项目生命周期过程都是基于插件完成的</li>
+</ul>
+</blockquote>
+<h3 id="1-Maven仓库"><a href="#1-Maven仓库" class="headerlink" title="1. Maven仓库"></a>1. Maven仓库</h3><blockquote>
+<ul>
+<li>中央仓库<br><code>即远程仓库，仓库中jar由专业团队（maven 团队）统一维护：</code>【<a href="http://repo1.maven.org/maven2/" target="_blank" rel="noopener">中央仓库的地址</a>】</li>
+<li>本地仓库<br><code>相当于缓存，工程第一次会从远程仓库（互联网）去下载jar包，将jar包存在本地仓库（在程序员的电脑上）,第二次不需要从远程仓库去下载。先从本地仓库找，如果找不到才会去远程仓库找</code></li>
+<li>私服<br><code>在公司内部架设一台私服，其它公司架设一台仓库，对外公开</code></li>
+</ul>
+</blockquote>
+<h3 id="2-Maven环境搭建"><a href="#2-Maven环境搭建" class="headerlink" title="2. Maven环境搭建"></a>2. Maven环境搭建</h3><blockquote>
+<ul>
+<li>本地仓库配置<br><code>打开 maven 的安装目录中 conf/ settings.xml 文件，在这里配置本地仓库</code></li>
+</ul>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 配置本地仓库的目录为 D:\repository_ssh --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">localRepository</span>&gt;</span>D:\repository_ssh<span class="tag">&lt;/<span class="name">localRepository</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="3-Maven入门"><a href="#3-Maven入门" class="headerlink" title="3. Maven入门"></a>3. Maven入门</h3><h4 id="3-1-创建Maven工程"><a href="#3-1-创建Maven工程" class="headerlink" title="3.1 创建Maven工程"></a>3.1 创建Maven工程</h4><blockquote>
+<ul>
+<li>工程坐标(<code>maven 对所有工程管理基于坐标进行管理</code>)<ul>
+<li><code>Group Id：项目的名称，项目名称以域名的倒序</code></li>
+<li><code>Artifact Id：模块名称（子项目名称）</code></li>
+<li><code>Version：模块的版本，snapshot（快照版，没有正式发行）、release（正式发行版本）</code></li>
+<li><code>Packaging：打包方式，jar(普通java项目),pom(pom工程),war(web项目)</code></li>
+</ul>
+</li>
+<li>工程目录结构<ul>
+<li><code>/src/main/java 主体程序 java 源文件（不要放配置文件）</code></li>
+<li><code>/src/main/resources 主体程序所需要的配置文件（不要放 java 文件）</code></li>
+<li><code>/src/test/java 单元测试程序 java 源文件</code></li>
+<li><code>/src/test/resources 单元测试程序所用的配置文件</code></li>
+<li><code>/target 编译输出目录</code></li>
+<li><code>pom.xml Maven 进行工作的主要配置文件</code></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h4 id="3-2-设置编译版本"><a href="#3-2-设置编译版本" class="headerlink" title="3.2 设置编译版本"></a>3.2 设置编译版本</h4><blockquote>
+<ul>
+<li>将maven-compiler-plugin设置为2.3.2版本<br><code>本步骤可以通过右键工程Maven-&gt;add plugin,然后搜索并安装</code></li>
+<li>Maven工程默认是JDK1.5，我们需要将编译版本改为JDK1.7 【<code>勿忘</code>】<br><code>本步骤手动添加</code></li>
+</ul>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 下述信息配置在pom.xml中【并对Maven工程Update Project】--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">source</span>&gt;</span>1.7<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">target</span>&gt;</span>1.7<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="3-3-添加依赖"><a href="#3-3-添加依赖" class="headerlink" title="3.3 添加依赖"></a>3.3 添加依赖</h4><blockquote>
+<p>Eclipse：Maven – &gt; Add Dependency【<code>通过下面的搜索框进行模糊搜索</code>】<br><code>经过上述操作，pom.xml会自动增添配置信息；Maven Dependecies目录下会自动增添Jar包（包含依赖包...）</code></p>
+</blockquote>
+<h3 id="4-Maven命令"><a href="#4-Maven命令" class="headerlink" title="4. Maven命令"></a>4. Maven命令</h3><blockquote>
+<p>Maven 有三套相互独立的生命周期，分别是：clean、default、site</p>
+<ul>
+<li><code>clean 主要是清理项目</code></li>
+<li><code>default 是 Maven 最核心的的构建项目</code></li>
+<li><code>site 是生成项目站点</code><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/maven%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt=""></li>
+</ul>
+</blockquote>
+<hr>
+<blockquote>
+<p>核心命令<br><code>【run as --&gt; maven build(在Goals中输入命令)】</code></p>
+<ul>
+<li><strong><code>compile</code></strong>：<code>编译</code></li>
+<li><strong><code>clean</code></strong>：<code>清理，将 target 下的 class 文件清理</code></li>
+<li><strong><code>test</code></strong>：<code>执行单元测试类，执行 src/test/java 下的类</code></li>
+<li><strong><code>package</code></strong>：<code>将 java 工程打成 jar、war</code></li>
+<li><strong><code>install</code></strong>：<code>安装命令，将将程的 jar 发布到本地仓库发布到仓库，目录按照本工程定义的坐标生成目录</code></li>
+<li><strong><code>clean tomcat7:run</code></strong>:<code>清理之前的内容,并启动tomcat7服务器(tomcat默认为6)</code></li>
+<li><strong><code>package Dskiptests</code></strong>：<code>跳过测试代码进行打包(避免由于测试代码中有错导致打包不成功)</code><blockquote>
+<p><code>其实我们所执行的这些命令是对 maven 原生命令的封装，我们可以在命令提示符下直接通过这些命令来对代码进行编译打包等操作</code></p>
+</blockquote>
+</li>
+</ul>
+</blockquote>
+<h2 id="二-创建-SSH2-工程-★"><a href="#二-创建-SSH2-工程-★" class="headerlink" title="二. 创建 SSH2 工程(★)"></a>二. 创建 SSH2 工程(★)</h2><blockquote>
+<p>用 SSH2 集成框架搭建mavenweb工程，并以war形式打包</p>
+</blockquote>
+<h3 id="1-创建war工程"><a href="#1-创建war工程" class="headerlink" title="1. 创建war工程"></a>1. 创建war工程</h3><blockquote>
+<ul>
+<li>创建war工程(打包方式选择war)</li>
+<li>手动添加 web.xml</li>
+<li>添加插件【<code>编译插件，tomcat插件</code>】</li>
+<li>添加servlet-api依赖</li>
+</ul>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 添加插件 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">		<span class="comment">&lt;!-- 编译插件 --&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">source</span>&gt;</span>1.7<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">target</span>&gt;</span>1.7<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">		<span class="comment">&lt;!-- tomcat插件 --&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.tomcat.maven<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tomcat7-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">				<span class="comment">&lt;!-- 指定端口 --&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">port</span>&gt;</span>8080<span class="tag">&lt;/<span class="name">port</span>&gt;</span></span><br><span class="line">				<span class="comment">&lt;!-- 请求路径 --&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">path</span>&gt;</span>/<span class="tag">&lt;/<span class="name">path</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 添加servlet-api的依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.servlet<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>servlet-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="comment">&lt;!-- 版本 --&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">		<span class="comment">&lt;!-- 作用域 --&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-添加SSH依赖"><a href="#2-添加SSH依赖" class="headerlink" title="2. 添加SSH依赖"></a>2. 添加SSH依赖</h3><blockquote>
+<ul>
+<li>servlet依赖</li>
+<li>Hibernate依赖</li>
+<li>struts2依赖</li>
+<li>Spring依赖</li>
+</ul>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 将各种版本信息用变量保存，然后引用 【变量】--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">hibernate.version</span>&gt;</span>5.0.7.Final<span class="tag">&lt;/<span class="name">hibernate.version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">spring.version</span>&gt;</span>4.2.4.RELEASE<span class="tag">&lt;/<span class="name">spring.version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">struts.version</span>&gt;</span>2.3.24<span class="tag">&lt;/<span class="name">struts.version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- servlet: 提供servlet-api，处理请求【必须指定scope】--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.servlet<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>servlet-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span> <span class="comment">&lt;!--依赖范围--&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- hibernate核心包 --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.hibernate<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hibernate-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;hibernate.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--spring核心及相关包--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-beans<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-orm<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context-support<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-aop<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">   		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-tx<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">   		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">   	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- spring用的aspectj--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.aspectj<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>aspectjweaver<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>1.8.7<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- struts2核心及相关包--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.struts<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>struts2-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;struts.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">exclusions</span>&gt;</span> <span class="comment">&lt;!-- ?? --&gt;</span></span><br><span class="line">   			<span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">   				<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javassist<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   				<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>javassist<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">   			<span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">   		<span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.struts<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>struts2-spring-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;struts.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!-- mysql连接--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>5.1.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--jstl包 --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>jstl<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jstl<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-配置文件"><a href="#3-配置文件" class="headerlink" title="3. 配置文件"></a>3. 配置文件</h3><blockquote>
+<p>参照SSH整合：</p>
+<ul>
+<li>web.xml：<code>【置于Src下的main/webapp】：配置监听器自动加载applicationContext、拦截器加载struts、拦截器控制数据库session延迟问题</code></li>
+<li>struts.xml：<code>【置于Java Resources下的src/main/resource】：工程相关常量</code></li>
+<li><del>hibernate.cfg.xml</del></li>
+<li><strong>applicationContext.xml</strong>：<code>【置于Java Resources下的src/main/resource】：一言难尽</code></li>
+</ul>
+</blockquote>
+<h3 id="4-包结构"><a href="#4-包结构" class="headerlink" title="4. 包结构"></a>4. 包结构</h3><blockquote>
+<ul>
+<li>在<code>Java Resources下的src/main/java</code>下配置包结构，存放java源代码</li>
+<li>在<code>Java Resources下的src/main/resource</code>下配置包结构，存放配置文件</li>
+</ul>
+</blockquote>
+<h2 id="三-聚合与继承"><a href="#三-聚合与继承" class="headerlink" title="三. 聚合与继承"></a>三. 聚合与继承</h2><p><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/%E8%81%9A%E5%90%88%E4%B8%8E%E7%BB%A7%E6%89%BF.png" alt=""><br><code>(注：在现有的多模块maven项目中，一般一个POM既是聚合POM，又是父POM)</code></p>
+<h3 id="1-聚合"><a href="#1-聚合" class="headerlink" title="1. 聚合"></a>1. 聚合</h3><p><code>多模块</code></p>
+<blockquote>
+<p>把多个模块或项目聚合到一起，我们可以建立一个<strong><code>专门负责聚合工作的Maven工程</code></strong></p>
+<ul>
+<li><code>该聚合模块本身也为一个 Maven 项目，它必须有自己的POM</code></li>
+<li><code>其打包方式必须为pom</code></li>
+<li><code>版本：聚合模块的版本和被聚合模块版本一致</code></li>
+<li><code>相对目录：每个 module 的值都是一个当前 POM 的相对目录</code></li>
+<li><code>目录名称：为了方便的快速定位内容，模块所处的目录应当与其 artifactId一致(Maven 约定而不是硬性要求)</code></li>
+<li><code>聚合模块减少的内容：聚合模块的内容仅仅是一个 pom.xml 文件，它不包含 src/main/Java、src/test/java 等目录，因为它只是用来帮助其它模块构建的工具，本身并没有实质的内容</code></li>
+<li><code>聚合模块和子模块的目录：他们可以是父子类，也可以是平行结构，当然如果使用平行结构，那么聚合模块的 POM 也需要做出相应的更改</code></li>
+</ul>
+</blockquote>
+<h3 id="2-继承"><a href="#2-继承" class="headerlink" title="2. 继承"></a>2. 继承</h3><blockquote>
+<p>针对plugin和dependency而言</p>
+<ul>
+<li><code>一般为父子结构</code></li>
+<li><code>作为父模块的 POM，其打包类型也必须为 POM</code></li>
+<li><code>父模块只是为了帮助我们消除重复，所以它也不需要 src/main/java、src/test/java 等目录</code></li>
+<li><code>子模块省略groupId 和 version：使用了继承的子模块中可以不声明 groupId和 version, 子模块将隐式的继承父模块的这两个元素</code></li>
+</ul>
+</blockquote>
+<h3 id="3-聚合VS继承"><a href="#3-聚合VS继承" class="headerlink" title="3. 聚合VS继承"></a>3. 聚合VS继承</h3><blockquote>
+<p>聚合和继承通常是结合使用的，但是其作用是不同的</p>
+<ul>
+<li><code>聚合是将多个模块的工程汇聚到一起</code></li>
+<li><code>继承则是指明某个模块工程要继承另一个模块功能</code></li>
+</ul>
+</blockquote>
+<h2 id="四-构建多模块Maven工程"><a href="#四-构建多模块Maven工程" class="headerlink" title="四. 构建多模块Maven工程"></a>四. 构建多模块Maven工程</h2><h3 id="1-构建父工程-Maven-Project"><a href="#1-构建父工程-Maven-Project" class="headerlink" title="1. 构建父工程(Maven Project)"></a>1. 构建父工程(Maven Project)</h3><blockquote>
+<p>父工程的打包方式必须为pom</p>
+</blockquote>
+<h3 id="2-创建子模块-Maven-Module"><a href="#2-创建子模块-Maven-Module" class="headerlink" title="2. 创建子模块(Maven Module)"></a>2. 创建子模块(Maven Module)</h3><p><code>配置文件同时也要分离存放在各模块</code></p>
+<blockquote>
+<ul>
+<li>domain子模块 【<code>打包方式为jar</code>】<ul>
+<li><code>存放实体bean类的映射配置文件：*.hbm.xml</code> 【必须构造<strong>和java代码中一样的包结构</strong>用于存放】</li>
+</ul>
+</li>
+<li>dao子模块 【<code>打包方式为jar</code>】<ul>
+<li><code>存放数据源配置文件：applicationContext_datasource.xml</code></li>
+<li><code>存放dao实现类的配置文件：applicationContext_dao.xml</code></li>
+</ul>
+</li>
+<li>service子模块【<code>打包方式为jar</code>】<ul>
+<li><code>存放数据库事务的配置文件：applicationContext_tx.xml</code></li>
+<li><code>存放service实现类的配置文件：applicationContext_service.xml</code></li>
+</ul>
+</li>
+<li>web.action子模块 【<strong><code>打包方式为war</code></strong>】<ul>
+<li><code>存放页面jsp文件</code></li>
+<li><code>存放实体类与数据表关系的配置文件：struts.xml</code></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="3-单元测试"><a href="#3-单元测试" class="headerlink" title="3. 单元测试"></a>3. 单元测试</h3><blockquote>
+<ol>
+<li>在dao层中添加junit依赖</li>
+<li>在dao层<code>src/test/java</code>下创建测试类</li>
+<li>右键点击你要测试的<strong>方法</strong>，选择右键菜单 Run as –&gt; JUnit test</li>
+</ol>
+</blockquote>
+<h2 id="五-依赖管理"><a href="#五-依赖管理" class="headerlink" title="五. 依赖管理"></a>五. 依赖管理</h2><h3 id="1-依赖范围"><a href="#1-依赖范围" class="headerlink" title="1. 依赖范围"></a>1. 依赖范围</h3><blockquote>
+<p>一些特殊应用场景：</p>
+<ul>
+<li>servlet-api<strong>必须</strong>设置为provided<br><code>如果在运行状态存在(即在war包中存在)，会与tomcat中自带的servlet冲突</code></li>
+<li>mysql 驱动建议设置为runtime<br><code>编译过程并不需要利用到连接驱动</code></li>
+<li>test设置为test<br><code>只在测试中用到</code></li>
+</ul>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- servlet-api依赖的设置 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.servlet<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>servlet-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span> <span class="comment">&lt;!--依赖范围为provided--&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-依赖传递"><a href="#2-依赖传递" class="headerlink" title="2. 依赖传递"></a>2. 依赖传递</h3><blockquote>
+<p>依赖传递过程中，其最终依赖范围(Scope)为交集运算后的结果<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/%E4%BE%9D%E8%B5%96%E4%BC%A0%E9%80%92.png" alt=""></p>
+</blockquote>
+<h3 id="3-依赖调节原则"><a href="#3-依赖调节原则" class="headerlink" title="3. 依赖调节原则"></a>3. <del>依赖调节原则</del></h3><blockquote>
+<p>多条路径指向同一个依赖结果时，遵循如下原则</p>
+<ul>
+<li>依赖调解第一原则：路径优先</li>
+<li>依赖调解第二原则：声明优先</li>
+</ul>
+</blockquote>
+<h3 id="4-版本锁定-★"><a href="#4-版本锁定-★" class="headerlink" title="4. 版本锁定(★)"></a>4. 版本锁定(★)</h3><blockquote>
+<p>在Maven中利用<code>&lt;dependencyManagement&gt;</code>标签进行所依赖jar包进的版本管理</p>
+<ul>
+<li><code>版本控制器一般声明在父类(便于子类的依赖版本的统一管理)</code></li>
+<li><code>如果依赖中没有声明版本，才会采信版本控制器中的版本信息，否则遵循本身的设置</code></li>
+</ul>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 锁定版本，struts2-2.3.24、spring4.2.4、hibernate5.0.7 --&gt;</span>  </span><br><span class="line"><span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span>  </span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span>  </span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span>  </span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span>  </span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span>  </span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span>  </span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-排除依赖"><a href="#5-排除依赖" class="headerlink" title="5. 排除依赖"></a>5. 排除依赖</h3><blockquote>
+<p>在使用框架中，又可能多个框架引入了相同的依赖Jar包，导致版本冲突，需要<strong>排除低版本的 jar 包</strong></p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.struts<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>struts2-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.24<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--排除struts中依赖的javassist【比hibernate中的版本低】--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javassist<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>javassist<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="六-私服nexus搭建"><a href="#六-私服nexus搭建" class="headerlink" title="六. 私服nexus搭建"></a>六. 私服nexus搭建</h2><blockquote>
+<p>nexus中的仓库按类型分类：<br>（<code>平常开发中都去连接仓库组Group，仓库组中包括：hosted、proxy</code>）</p>
+<ul>
+<li><code>hosted:宿主仓库，自己项目的 jar 要放到 hosted 类型的仓库中</code><ul>
+<li><code>3rd party一般指版权不明的第三方jar，但可以正常使用</code></li>
+<li><code>release为发行版</code></li>
+<li><code>snapshot为快照版</code></li>
+</ul>
+</li>
+<li><code>proxy：代理仓库，代理中央仓库</code></li>
+<li><code>virtual：虚拟仓库，存储了 maven1 的构件，一般不用</code></li>
+<li><code>group:仓库组，将一些仓库组成一个组，自己项目连接仓库组去下载 jar 包</code></li>
+</ul>
+</blockquote>
+<h3 id="1-nexus-安装"><a href="#1-nexus-安装" class="headerlink" title="1. nexus 安装"></a>1. nexus 安装</h3><blockquote>
+<ul>
+<li>解压安装包</li>
+<li>并在<code>nexus-2.12.0-01-bundle\nexus-2.12.0-01\bin</code>目录下使用cmd命令<code>nexus install</code>【cmd环境】</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>启动nexus服务 【windows的本地服务】</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>进入nexus：<a href="http://localhost:8081/nexus" target="_blank" rel="noopener">http://localhost:8081/nexus</a> 【账户:admin;密码:admin123】</li>
+</ul>
+</blockquote>
+<h3 id="2-构建索引"><a href="#2-构建索引" class="headerlink" title="2. 构建索引"></a>2. 构建索引</h3><blockquote>
+<p>刚刚安装好的 nexus 是无法直接搜索到 jar 包的，必须下载索引才可以正常使用</p>
+<ul>
+<li>到中央仓库地址 <a href="http://repo.maven.apache.org/maven2/.index/" target="_blank" rel="noopener">http://repo.maven.apache.org/maven2/.index/</a> 下载以下两个索引压缩文件及一个jar包<ul>
+<li><code>nexus-maven-repository-index.gz</code></li>
+<li><code>nexus-maven-repository-index.properties</code>(均在文档结尾)</li>
+<li><code>indexer-cli-5.1.1.jar</code>(直接google)</li>
+</ul>
+</li>
+<li>将上述三个文件放在一个文件夹下，并在该目录下运行cmd：<code>java -jar indexer-cli-5.1.1.jar -u nexus-maven-repository-index.gz -d indexer</code><br><code>【该过程用于构建索引(自动生成在indexer目录下)】</code></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>将<code>nexus-2.12.0-01-bundle\sonatype-work\nexus\indexer\central-ctx</code>目录下的文件删除，将上边的索引文件拷贝到此目录下</li>
+</ul>
+</blockquote>
+<h3 id="3-镜像配置"><a href="#3-镜像配置" class="headerlink" title="3. 镜像配置"></a>3. 镜像配置</h3><blockquote>
+<p>在maven安装目录下的<code>conf/settings.xml</code>中进行配置</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mirrors</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>*<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">url</span>&gt;</span>http://localhost:8081/nexus/content/groups/public/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mirrors</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="4-发布自定义工程jar"><a href="#4-发布自定义工程jar" class="headerlink" title="4. 发布自定义工程jar"></a>4. 发布自定义工程jar</h3><blockquote>
+<p>在pom.xml中配置</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--releases版本的配置--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">url</span>&gt;</span></span><br><span class="line">			http://localhost:8081/nexus/content/repositories/releases/</span><br><span class="line">		<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--snapshots版本的配置 --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">id</span>&gt;</span>snapshots<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">url</span>&gt;</span></span><br><span class="line">			http://localhost:8081/nexus/content/repositories/snapshots/</span><br><span class="line">		<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在maven的setting.xml中配置</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--releases版本的配置--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">username</span>&gt;</span>admin<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">password</span>&gt;</span>admin123<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line">	<span class="comment">&lt;!--snapshots版本的配置 --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">id</span>&gt;</span>snapshots<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">username</span>&gt;</span>admin<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">password</span>&gt;</span>admin123<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>java基础</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+        <tag>maven</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Spring Data</title>
     <url>/2019/10/24/Spring%20Data%E5%AE%9E%E6%88%98/</url>
     <content><![CDATA[<blockquote>
