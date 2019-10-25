@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="springCloud,prometheus,actuator,SpringBoot," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一. 前言Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等 二. 技术栈简介1. PrometheusPrometheus可以与Grafan">
+<meta name="keywords" content="springCloud,prometheus,actuator,SpringBoot">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于SpringBoot的服务监控与健康检查">
+<meta property="og:url" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;2019&#x2F;10&#x2F;24&#x2F;%E5%9F%BA%E4%BA%8ESpringBoot%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5&#x2F;index.html">
+<meta property="og:site_name" content="小土狗的博客">
+<meta property="og:description" content="一. 前言Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等 二. 技术栈简介1. PrometheusPrometheus可以与Grafan">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;Prometheus.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;actuator%E4%BF%A1%E6%81%AF.png">
+<meta property="og:updated_time" content="2019-10-25T11:33:29.541Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;Prometheus.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yangsiyuan0.github.io/2019/10/24/基于SpringBoot的服务监控与健康检查/"/>
+
+
+
+
+
+  <title>基于SpringBoot的服务监控与健康检查 | 小土狗的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小土狗的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangsiyuan0.github.io/2019/10/24/%E5%9F%BA%E4%BA%8ESpringBoot%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="杨思远">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/person.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小土狗的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">基于SpringBoot的服务监控与健康检查</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-24T16:35:27+08:00">
+                2019-10-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SpringBoot/" itemprop="url" rel="index">
+                    <span itemprop="name">SpringBoot</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/10/24/%E5%9F%BA%E4%BA%8ESpringBoot%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/10/24/%E5%9F%BA%E4%BA%8ESpringBoot%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.4k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  11
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。<br>Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等</p>
+<h2 id="二-技术栈简介"><a href="#二-技术栈简介" class="headerlink" title="二. 技术栈简介"></a>二. 技术栈简介</h2><h3 id="1-Prometheus"><a href="#1-Prometheus" class="headerlink" title="1. Prometheus"></a>1. Prometheus</h3><p>Prometheus可以与Grafana监控展现系统无缝集成，可以灵活满足多种自定义的监控需求，提供灵活可配且强大的可视化界面。<br><img src="/images/Prometheus.png" alt=""></p>
+<h3 id="2-Actuator"><a href="#2-Actuator" class="headerlink" title="2. Actuator"></a>2. Actuator</h3><p>Actuator作为springboot的Starter POMs中提供的一个特殊依赖模块，极易在springBoot项目中集成，自动为应用构建了一系列用于监控的端点，同时在其他springCloud组件时会对其进行自动扩展(比如在Eurake为/health端点扩展了指标)，因此推荐在SpringBoot项目中引入，其相关监控信息以json数据呈现。<br><img src="/images/actuator%E4%BF%A1%E6%81%AF.png" alt=""></p>
+<h2 id="三-在项目中的实践"><a href="#三-在项目中的实践" class="headerlink" title="三. 在项目中的实践"></a>三. 在项目中的实践</h2><h3 id="1-springBoot项目集成Prometheus"><a href="#1-springBoot项目集成Prometheus" class="headerlink" title="1. springBoot项目集成Prometheus"></a>1. springBoot项目集成Prometheus</h3><h4 id="1-引入maven依赖"><a href="#1-引入maven依赖" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康监控 Prometheus --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_servlet<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_spring_boot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_hotspot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-启动类注解开启默认端点"><a href="#2-启动类注解开启默认端点" class="headerlink" title="2). 启动类注解开启默认端点"></a>2). 启动类注解开启默认端点</h4><p>springBoot项目在启动类上增加@EnablePrometheusEndpoin注解即可开启端点；<br>在启动类主方法上增加DefaultExports.initialize(); 可以实现JVM数据监控。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnablePrometheusEndpoint</span></span><br><span class="line"><span class="meta">@ServletComponentScan</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> <span class="keyword">extends</span> <span class="title">SpringBootServletInitializer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		DefaultExports.initialize(); <span class="comment">//开启JVM监控</span></span><br><span class="line">		SpringApplication.run(Application.class, args);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-实现核心服务耗时直方图监控指标"><a href="#3-实现核心服务耗时直方图监控指标" class="headerlink" title="3). 实现核心服务耗时直方图监控指标"></a>3). 实现核心服务耗时直方图监控指标</h4><p>该功能建议在gateway中实现，各个服务通过路由路径进行访问。具体通过新增指标过滤器实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span>: regisPrometheusMetricsFilter  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 【用于监控模块Prometheus】  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> FilterRegistrationBean    返回类型  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019年4月23日</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function">FilterRegistrationBean <span class="title">regisPrometheusMetricsFilter</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Filter prometheusMetricsFilter = <span class="keyword">new</span> MetricsFilter(<span class="string">"http_request_duration_seconds"</span>,</span><br><span class="line">            <span class="string">"Prometheus MetricsFilter http request duration(seconds)"</span>,</span><br><span class="line">            <span class="keyword">new</span> Integer(<span class="number">5</span>),<span class="comment">//pathComponents level</span></span><br><span class="line">            <span class="keyword">null</span>);</span><br><span class="line">    FilterRegistrationBean prometheusFilterReg = <span class="keyword">new</span> FilterRegistrationBean();</span><br><span class="line">    prometheusFilterReg.setFilter(prometheusMetricsFilter);</span><br><span class="line">    prometheusFilterReg.setName(<span class="string">"prometheusMetricsFilter"</span>);</span><br><span class="line">    prometheusFilterReg.addUrlPatterns(<span class="string">"/*"</span>);</span><br><span class="line">    prometheusFilterReg.setOrder(Ordered.HIGHEST_PRECEDENCE);</span><br><span class="line">    <span class="keyword">return</span> prometheusFilterReg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-服务基本健康状态监控-自定义"><a href="#4-服务基本健康状态监控-自定义" class="headerlink" title="4). 服务基本健康状态监控[自定义]"></a>4). 服务基本健康状态监控[自定义]</h4><p>该功能通过后台线程的形式对<strong>自定义</strong>的健康状态指标进行更新，指标更新的工具类已由门户封装工具类MyServiceStatus，指标的更新拟有门户提供spring-task任务进行实时更新，建议各个服务启动时设置自身健康状态为healthy，具体健康状态有三种：</p>
+<ul>
+<li>HEALTHY：1</li>
+<li>ERROR：-1</li>
+<li>WARNING：0</li>
+</ul>
+<h5 id="i-健康状态监控工具类MyServiceStatus"><a href="#i-健康状态监控工具类MyServiceStatus" class="headerlink" title="i. 健康状态监控工具类MyServiceStatus"></a>i. 健康状态监控工具类MyServiceStatus</h5><p>基于Gauge，封装一个健康状态操作工具类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 用于prometheus状态监控</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyServiceStatus</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZHIXIN_APPCODE = <span class="string">"ZHIXIN"</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZHIXIN_APPCODE_ALL = <span class="string">"ZHIXIN_ALL"</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PORTAL_APPCODE = <span class="string">"dyportalserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String RELEASE_APPCODE = <span class="string">"dyreleaseserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WECAHT_APPCODE = <span class="string">"dywechatserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CMS_APPCODE = <span class="string">"dywebpageserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String MICROBLOG_APPCODE = <span class="string">"dymicroblogserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CFB_APPCODE = <span class="string">"dycfbserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String COMMAND_APPCODE = <span class="string">"newscommand"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TV_APPCODE = <span class="string">"dynewsserver"</span>;</span><br><span class="line">    <span class="comment">// 自定义Gauge对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Gauge status = Gauge.build()</span><br><span class="line">            .name(<span class="string">"service_status"</span>)</span><br><span class="line">            .help(<span class="string">"service status"</span>)</span><br><span class="line">            .labelNames(<span class="string">"module"</span>,<span class="string">"submodule"</span>,<span class="string">"description"</span>).register();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 健康状态常量</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> HEALTHY = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> ERROR = -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> WARNING = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 设置某个模块的监控状态，支持多线程并发调用</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> subModuleName  模块名称</span></span><br><span class="line"><span class="comment">     *                       至少要支持一个模块，该模块名称与该服务名称一致，如"creapi"</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> healthStatus  模块健康状态</span></span><br><span class="line"><span class="comment">     *                       1: Health</span></span><br><span class="line"><span class="comment">     *                       -1: Error</span></span><br><span class="line"><span class="comment">     *                       -0: Warning</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setHealthStatus</span><span class="params">(String subModuleName, <span class="keyword">double</span> healthStatus)</span></span>&#123;</span><br><span class="line">	   <span class="keyword">if</span>(PORTAL_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"采编门户"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(RELEASE_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"通稿稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(WECAHT_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"微信稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(CMS_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"网页稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(MICROBLOG_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"微博稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(CFB_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"文件库"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(COMMAND_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"指挥调度"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(TV_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"电视稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">    &#125;</span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Title</span>: setSummaryHealthStatus  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Description</span>: 【设置智新服务中的健康状态】  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> void    返回类型  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@date</span> 2019年5月14日</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setSummaryHealthStatus</span><span class="params">(<span class="keyword">double</span> healthStatus)</span></span>&#123;</span><br><span class="line"><span class="comment">//	   Gauge summaryStatus = Gauge.build().name("service_status").help("service status").labelNames("module").register();</span></span><br><span class="line">	   status.labels(ZHIXIN_APPCODE,ZHIXIN_APPCODE_ALL,<span class="string">"采编平台"</span>).set(healthStatus);</span><br><span class="line">   &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Title</span>: inspectService  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Description</span>: 【获取服务的健康状态】  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> boolean    返回类型  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> Exception </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@date</span> 2019年5月13日</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">monitorInspect</span><span class="params">(String serviceUrl)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">	   <span class="keyword">boolean</span> checkActive = checkActive(serviceUrl);</span><br><span class="line">   		<span class="keyword">return</span> checkActive;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">checkActive</span><span class="params">(String cmeditAddress)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">       <span class="comment">// 1、参数校验</span></span><br><span class="line">       <span class="keyword">if</span>(DyStringUtils.isEmpty(cmeditAddress))&#123;</span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"服务地址为空！"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">// 2、拼接请求接口完整地址</span></span><br><span class="line">       String url = DyStringUtils.combineUrl(cmeditAddress, Constants.CHECK_SERVICE_INTERFACE);</span><br><span class="line">       <span class="comment">// 3.1 封装请求头</span></span><br><span class="line">       Map&lt;String, String&gt; postHeader = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line">       <span class="comment">// 3.2 封装请求体</span></span><br><span class="line">       NameValuePair[] parametersBody = <span class="keyword">new</span> NameValuePair[<span class="number">1</span>];</span><br><span class="line">       parametersBody[<span class="number">0</span>] = <span class="keyword">new</span> NameValuePair(<span class="string">"count"</span>, <span class="string">"11"</span>);</span><br><span class="line">       <span class="comment">// 4、调用接口返回结果</span></span><br><span class="line">       JSONObject paramJson = <span class="keyword">new</span> JSONObject();</span><br><span class="line">       String result = HttpClientUtil.HttpClientPost(url, paramJson.toString(), parametersBody, postHeader);</span><br><span class="line">       <span class="comment">// 5、解析返回的结果</span></span><br><span class="line">       <span class="keyword">if</span> (DyStringUtils.isNotEmpty(result) &amp;&amp; DyStringUtils.isJson(result)) &#123;</span><br><span class="line">        <span class="comment">// 获取数据</span></span><br><span class="line">           JSONObject json = JSONObject.fromObject(result);</span><br><span class="line">           <span class="keyword">return</span> json.getBoolean(<span class="string">"status"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="ii-定时任务监控子模块健康状态"><a href="#ii-定时任务监控子模块健康状态" class="headerlink" title="ii. 定时任务监控子模块健康状态"></a>ii. 定时任务监控子模块健康状态</h5><p>该定时任务，建议在gateway中实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 更新应用状态任务</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Conditional</span>(value = &#123; PrometheusCondition.class &#125;) <span class="comment">//使用策略模式控制开关</span></span><br><span class="line"><span class="meta">@Component</span>(<span class="string">"prometheusStatusCheckEngineer"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrometheusStatusCheckEngineer</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(PrometheusStatusCheckEngineer.class);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PORTAL_APPCODE = <span class="string">"portalserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String RELEASE_APPCODE = <span class="string">"releaseserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WECAHT_APPCODE = <span class="string">"wechatserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CMS_APPCODE = <span class="string">"webpageserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String MICROBLOG_APPCODE = <span class="string">"microblogserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CFB_APPCODE = <span class="string">"cfbserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String COMMAND_APPCODE = <span class="string">"commandserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TV_APPCODE = <span class="string">"newsserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] APP_LIST = &#123;PORTAL_APPCODE,</span><br><span class="line">            RELEASE_APPCODE,WECAHT_APPCODE,CMS_APPCODE,</span><br><span class="line">            MICROBLOG_APPCODE,TV_APPCODE,CFB_APPCODE,COMMAND_APPCODE&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ZuulProperties zuulProperties;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Scheduled</span>(cron = <span class="string">"0/30 * * * * ?"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	    logger.info(<span class="string">"----------更新任务状态线程启动-------"</span>);</span><br><span class="line">	    <span class="keyword">double</span> summaryStatus = APP_LIST.length;</span><br><span class="line">	    <span class="keyword">boolean</span> portalStatus = <span class="keyword">false</span>;</span><br><span class="line">	    <span class="keyword">for</span> (String appContext : APP_LIST) &#123;</span><br><span class="line">	        <span class="keyword">try</span> &#123;</span><br><span class="line">	        	Map&lt;String, ZuulRoute&gt; routes = zuulProperties.getRoutes();</span><br><span class="line">	        	ZuulRoute zuulRoute = routes.get(appContext);</span><br><span class="line">	        	String url = zuulRoute.getUrl();</span><br><span class="line">	        	logger.info(<span class="string">"url地址：【"</span> + url + <span class="string">"】"</span>);</span><br><span class="line">	        	<span class="keyword">if</span>(COMMAND_APPCODE.equals(appContext))&#123;</span><br><span class="line">	        		appContext = <span class="string">"newscommand"</span>;</span><br><span class="line">	        	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	        		appContext = <span class="string">"dy"</span>+appContext;</span><br><span class="line">	        	&#125;</span><br><span class="line">	            <span class="keyword">boolean</span> monitorInspect = MyServiceStatus.monitorInspect(url);</span><br><span class="line">	            <span class="keyword">if</span>(monitorInspect)&#123;</span><br><span class="line">	                MyServiceStatus.setHealthStatus(appContext, MyServiceStatus.HEALTHY);</span><br><span class="line">	                <span class="keyword">if</span>(<span class="string">"dyportalserver"</span>.equals(appContext))&#123;</span><br><span class="line">	                	portalStatus = <span class="keyword">true</span>;</span><br><span class="line">	                &#125;</span><br><span class="line">	            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	                MyServiceStatus.setHealthStatus(appContext, MyServiceStatus.WARNING);</span><br><span class="line">	                summaryStatus --;</span><br><span class="line">	            &#125;</span><br><span class="line">	            <span class="keyword">if</span>(summaryStatus == <span class="number">0</span> || !portalStatus)&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.ERROR);</span><br><span class="line">	            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(summaryStatus == APP_LIST.length)&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.HEALTHY);</span><br><span class="line">	            &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.WARNING);</span><br><span class="line">	            &#125;</span><br><span class="line">	        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	            logger.info(<span class="string">"检测【"</span>+appContext+<span class="string">"】健康状态异常"</span>);</span><br><span class="line">	            MyServiceStatus.setHealthStatus(appContext,MyServiceStatus.ERROR);</span><br><span class="line">	        &#125;</span><br><span class="line">	    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-访问URL获取监控数据"><a href="#5-访问URL获取监控数据" class="headerlink" title="5). 访问URL获取监控数据"></a>5). 访问URL获取监控数据</h4><p>访问<a href="http://ip:port/项目上下文/prometheus，就会返回Prometheus格式的指标监控信息" target="_blank" rel="noopener">http://ip:port/项目上下文/prometheus，就会返回Prometheus格式的指标监控信息</a><br>一个示例：<code>http://10.10.0.120:9010/gateway/prometheus</code></p>
+<h3 id="2-springBoot项目集成Actuator"><a href="#2-springBoot项目集成Actuator" class="headerlink" title="2. springBoot项目集成Actuator"></a>2. springBoot项目集成Actuator</h3><h4 id="1-引入maven依赖-1"><a href="#1-引入maven依赖-1" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康检查 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-apploication文件配置"><a href="#2-apploication文件配置" class="headerlink" title="2). apploication文件配置"></a>2). apploication文件配置</h4><ul>
+<li><p>SpringBoot1.x的配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">######################## 健康检查配置   ########################</span></span><br><span class="line"><span class="comment">#关闭安全认证</span></span><br><span class="line"><span class="string">management.security.enabled=false</span></span><br><span class="line"><span class="comment">#修改访问路径  2.0之前默认是/2.0默认是 /actuator  可以通过这个属性值修改  </span></span><br><span class="line"><span class="string">management.context-path=/monitor</span></span><br></pre></td></tr></table></figure></li>
+<li><p>SpringBoot2.x的配置</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">######################## 健康检查配置   ########################</span></span><br><span class="line"><span class="comment">#关闭安全认证</span></span><br><span class="line"><span class="comment">#management.security.enabled=false</span></span><br><span class="line"><span class="string">spring.application.name=gateway</span></span><br><span class="line"><span class="string">management.endpoints.web.exposure.include=*</span></span><br><span class="line"><span class="string">management.metrics.tags.application=$&#123;spring.application.name&#125;</span></span><br><span class="line"><span class="string">management.metrics.export.atlas.enabled=true</span></span><br><span class="line"><span class="string">management.metrics.export.prometheus.enabled=true</span></span><br><span class="line"><span class="string">management.endpoints.web.base-path=/actuator</span></span><br><span class="line"><span class="string">management.endpoint.health.show-details=always</span></span><br></pre></td></tr></table></figure>
+<h4 id="3-自定义监控数据"><a href="#3-自定义监控数据" class="headerlink" title="3). 自定义监控数据"></a>3). 自定义监控数据</h4><p>通过在application-*.properties中增加配置项，实现对相关配置项进行前端显示，以便在生产环境简单地检测是否存在配置错误的情况，配置项以info.作为前缀</p>
+</li>
+<li><p>从pom中获取项目元数据</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">info.build.name=@project.name@</span></span><br><span class="line"><span class="string">info.build.description=@project.description@</span></span><br><span class="line"><span class="string">info.build.version=@project.version@</span></span><br><span class="line"><span class="string">info.build.groupId=@project.groupId@</span></span><br><span class="line"><span class="string">info.build.artifactId=@project.artifactId@</span></span><br><span class="line"><span class="string">info.build.spring-boot-version=@project.parent.version@</span></span><br><span class="line"><span class="string">info.build.java-version=@java.version@</span></span><br><span class="line"><span class="string">info.build.user-home=@user.home@</span></span><br><span class="line"><span class="string">info.build.source-encoding=@project.build.sourceEncoding@</span></span><br><span class="line"><span class="string">info.build.output-encoding=@project.reporting.outputEncoding@</span></span><br><span class="line"><span class="string">info.build.buidTimestamp=@maven.build.timestamp@</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置properties文件中的配置项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">info.config.description =基础配置</span><br><span class="line">info.config.version =$&#123;version&#125;</span><br><span class="line">info.config.profilesActive=$&#123;spring.profiles.active&#125;</span><br><span class="line">info.config.casServerUrlPrefix=$&#123;casServerUrlPrefix&#125;</span><br><span class="line">info.config.enablePrometheus=$&#123;gateway.prometheus&#125;</span><br><span class="line">info.filter.api.description=api加密过滤器状态</span><br><span class="line">info.filter.api.enable=$&#123;dyportalserver.enableApiFilter&#125;</span><br><span class="line">info.filter.api.filterPattern=$&#123;dyportalserver.apiFilterPattern&#125;</span><br><span class="line">info.filter.api.ignorePattern=$&#123;dyportalserver.apiIgnorePattern&#125;</span><br><span class="line">info.filter.cas.description=cas过滤器状态</span><br><span class="line">info.filter.cas.enable=$&#123;dyportalserver.enableCasFilter&#125;</span><br><span class="line">info.filter.cas.filterPattern=$&#123;dyportalserver.casFilterPattern&#125;</span><br><span class="line">info.filter.cas.ignorePattern=$&#123;dyportalserver.casIgnorePattern&#125;</span><br><span class="line">info.mq.description=消息中间件配置</span><br><span class="line">info.mq.enable=$&#123;gateway.rabbitmq&#125;</span><br><span class="line">info.mq.virtual-host=$&#123;spring.rabbitmq.virtual-host&#125;</span><br><span class="line">info.mq.addresses=$&#123;spring.rabbitmq.addresses&#125;</span><br><span class="line">info.mq.queueTv=$&#123;spring.rabbitmq.queueTv&#125;</span><br><span class="line">info.mq.queueRelease=$&#123;spring.rabbitmq.queueRelease&#125;</span><br><span class="line">info.mq.queueMicroblo=$&#123;spring.rabbitmq.queueMicroblo&#125;</span><br><span class="line">info.mq.queueMicroblo=$&#123;spring.rabbitmq.queueMicroblo&#125;</span><br><span class="line">info.mq.queueWechat=$&#123;spring.rabbitmq.queueWechat&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="4-访问URL获取监控数据"><a href="#4-访问URL获取监控数据" class="headerlink" title="4). 访问URL获取监控数据"></a>4). 访问URL获取监控数据</h4><blockquote>
+<ul>
+<li>/info：该端点用来返回一些应用自定义的信息</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/beans：该端点用来获取应用上下文中创建的所有Bean</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/autoconfig：该端点用来获取应用的自动化配置报告，其中包括所有自动化配置的候选项</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/env：该端点与/configprops不同，它用来获取应用所有可用的环境属性报告</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/mappings：该端点用来返回所有Spring MVC的控制器映射关系报告</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/configprops：该端点用来获取应用中配置的属性信息报告</li>
+</ul>
+</blockquote>
+<h2 id="四-FAQ"><a href="#四-FAQ" class="headerlink" title="四. FAQ"></a>四. FAQ</h2><h3 id="1-Prometheus项目默认的端点没有数据"><a href="#1-Prometheus项目默认的端点没有数据" class="headerlink" title="1. Prometheus项目默认的端点没有数据"></a>1. Prometheus项目默认的端点没有数据</h3><p>数据通过调用服务的query_range端口获取，检查这个路径是否被api加密过滤器或其他全局前置过滤器拦截。</p>
+<h3 id="2-监控数据被暴露出来是否有安全问题"><a href="#2-监控数据被暴露出来是否有安全问题" class="headerlink" title="2. 监控数据被暴露出来是否有安全问题"></a>2. 监控数据被暴露出来是否有安全问题</h3><p>确实有上述问题，因此一方面可以引入安全控制的依赖spring-boot-start-security，实现访问控制端点时均需要验证。另一方面，需要谨慎暴露明码的项目敏感信息</p>
+<h3 id="3-集成Prometheus之后出现热部署启动异常"><a href="#3-集成Prometheus之后出现热部署启动异常" class="headerlink" title="3. 集成Prometheus之后出现热部署启动异常"></a>3. 集成Prometheus之后出现热部署启动异常</h3><p>目前测试中发现有该问题，尚未解决</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="杨思远 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="杨思远 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/springCloud/" rel="tag"># springCloud</a>
+          
+            <a href="/tags/prometheus/" rel="tag"># prometheus</a>
+          
+            <a href="/tags/actuator/" rel="tag"># actuator</a>
+          
+            <a href="/tags/SpringBoot/" rel="tag"># SpringBoot</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/24/Maven/" rel="next" title="Maven">
+                <i class="fa fa-chevron-left"></i> Maven
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/" rel="prev" title="利用SpringSession实现分布式系统的跨域共享session">
+                利用SpringSession实现分布式系统的跨域共享session <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/person.jpg"
+                alt="杨思远" />
+            
+              <p class="site-author-name" itemprop="name">杨思远</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yangsiyuan0" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="yangsiyuan0@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-number">1.</span> <span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-技术栈简介"><span class="nav-number">2.</span> <span class="nav-text">二. 技术栈简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Prometheus"><span class="nav-number">2.1.</span> <span class="nav-text">1. Prometheus</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Actuator"><span class="nav-number">2.2.</span> <span class="nav-text">2. Actuator</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-在项目中的实践"><span class="nav-number">3.</span> <span class="nav-text">三. 在项目中的实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-springBoot项目集成Prometheus"><span class="nav-number">3.1.</span> <span class="nav-text">1. springBoot项目集成Prometheus</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-引入maven依赖"><span class="nav-number">3.1.1.</span> <span class="nav-text">1). 引入maven依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-启动类注解开启默认端点"><span class="nav-number">3.1.2.</span> <span class="nav-text">2). 启动类注解开启默认端点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-实现核心服务耗时直方图监控指标"><span class="nav-number">3.1.3.</span> <span class="nav-text">3). 实现核心服务耗时直方图监控指标</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-服务基本健康状态监控-自定义"><span class="nav-number">3.1.4.</span> <span class="nav-text">4). 服务基本健康状态监控[自定义]</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#i-健康状态监控工具类MyServiceStatus"><span class="nav-number">3.1.4.1.</span> <span class="nav-text">i. 健康状态监控工具类MyServiceStatus</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ii-定时任务监控子模块健康状态"><span class="nav-number">3.1.4.2.</span> <span class="nav-text">ii. 定时任务监控子模块健康状态</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-访问URL获取监控数据"><span class="nav-number">3.1.5.</span> <span class="nav-text">5). 访问URL获取监控数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-springBoot项目集成Actuator"><span class="nav-number">3.2.</span> <span class="nav-text">2. springBoot项目集成Actuator</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-引入maven依赖-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">1). 引入maven依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-apploication文件配置"><span class="nav-number">3.2.2.</span> <span class="nav-text">2). apploication文件配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-自定义监控数据"><span class="nav-number">3.2.3.</span> <span class="nav-text">3). 自定义监控数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-访问URL获取监控数据"><span class="nav-number">3.2.4.</span> <span class="nav-text">4). 访问URL获取监控数据</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-FAQ"><span class="nav-number">4.</span> <span class="nav-text">四. FAQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Prometheus项目默认的端点没有数据"><span class="nav-number">4.1.</span> <span class="nav-text">1. Prometheus项目默认的端点没有数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-监控数据被暴露出来是否有安全问题"><span class="nav-number">4.2.</span> <span class="nav-text">2. 监控数据被暴露出来是否有安全问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-集成Prometheus之后出现热部署启动异常"><span class="nav-number">4.3.</span> <span class="nav-text">3. 集成Prometheus之后出现热部署启动异常</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">杨思远</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">21.3k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人</span>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'HXNYivngkfY6vDXvnSRwn0R7-gzGzoHsz',
+        appKey: '8JUb3qgpcJoS2jbQVeuhPSdc',
+        placeholder: '请在此输入您的留言',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+
+  
+
+  
+
+<!-- 代码块复制功能 -->
+<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+</body>
+</html>
