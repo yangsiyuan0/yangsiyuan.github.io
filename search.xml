@@ -71,297 +71,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Spring Data</title>
-    <url>/2019/10/24/Spring%20Data%E5%AE%9E%E6%88%98/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>To Do</strong></p>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> <a href="https://stackoverflow.com/questions/11881548/jpa-or-jdbc-how-are-they-different" target="_blank" rel="noopener">JDBC与JPA的区别</a><ul>
-<li><code>JDBC是数据库访问的标准;JPA是ORM的标准</code></li>
-<li><code>JPA和JDBC之间的主要区别是抽象层次:JDBC是与数据库交互的低级标准,JPA是同一目的的较高标准</code></li>
-<li><code>JDBC是JPA的前身</code></li>
-</ul>
-</li>
-<li><input checked="" disabled="" type="checkbox"> <a href="http://www.jianshu.com/p/49b31ef74ff3" target="_blank" rel="noopener">Hibernate与Mybatis与Spring Data</a><ul>
-<li><code>Hibernate是一个开放源代码的对象关系映射框架，它对JDBC进行了非常轻量级的对象封装</code>【开发难度大】</li>
-<li><code>MyBatis 本是apache的一个开源项目iBatis，着力于POJO与SQL之间的映射关系</code></li>
-<li><code>Spring Data是一个用于简化数据库访问，并支持云服务的开源框架。其主要目标是使得对数据的访问变得方便快捷，并支持map-reduce框架和云计算数据服务</code>【SQL的自由度低】</li>
-</ul>
-</li>
-<li><input checked="" disabled="" type="checkbox"> Predicate接口中的CriteriaQuery与CriteriaBuilder<ul>
-<li><del><code>CriteriaQuery:表达式查询语句</code></del></li>
-<li><code>CriteriaBuilder：面向对象查询语句(.equal(),.and(),.or(),.like())</code></li>
-</ul>
-</li>
-<li><input checked="" disabled="" type="checkbox"> <a href="http://www.hollischuang.com/archives/1658" target="_blank" rel="noopener"><strong>JDBC事务和JTA事务</strong></a><ul>
-<li><code>JDBC的一切行为包括事务是基于一个Connection的(在JDBC中是通过Connection对象进行事务管理(常用的和事务相关的方法是： setAutoCommit、commit、rollback等)</code></li>
-<li><code>Java Transaction API是一个Java企业版 的应用程序接口，在Java环境中，允许完成跨越多个XA资源的分布式事务</code>【处理分布式事务】</li>
-</ul>
-</li>
-<li><input checked="" disabled="" type="checkbox"> <strong>关于关联对象的懒加载处理</strong></li>
-</ul>
-</blockquote>
-<hr>
-<blockquote>
-<p><strong>Question：</strong></p>
-<ul>
-<li>test中的数据库操作，会报tansactionrequired异常，事务会自动回滚roll back<ul>
-<li><code>在test方法上手动设置@Transactional可以声明事务</code></li>
-<li><code>在test方法上手动设置@Rollback(false)，可以禁止回滚</code></li>
-</ul>
-</li>
-<li>进行save(Object)操作时，如果对象中有主键信息，会自动切换为修改操作<code>(因此：增、改均可以使用同一个方法save)</code><br><code>【小tips:可以在页面设置隐藏td用于存放id，可以根据实际情况进行自动判断，进行增加或者修改】</code></li>
-</ul>
-</blockquote>
-<hr>
-<h2 id="一-概述"><a href="#一-概述" class="headerlink" title="一. 概述"></a>一. 概述</h2><blockquote>
-<p>为了简化并统一持久层的各种实现技术的API，Spring Data提供了一套标准的API，整合不同持久层</p>
-<ul>
-<li><code>spring-data-commons：一套标准API</code></li>
-<li><code>spring-data-jpa 基于整合JPA实现</code></li>
-</ul>
-</blockquote>
-<hr>
-<h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1.  简介"></a>1.  简介</h3><blockquote>
-<p>SpringData支持的持久层技术：</p>
-<ul>
-<li>NoSQL 存储：<code>MongoDB （文档数据库）</code>、<code>Neo4j（图形数据库）</code>、<code>Redis（键/值存储）</code>、<code>Hbase（列族数据库）</code></li>
-<li>关系数据存储技术：<code>JDBC</code>、<code>JPA</code><ul>
-<li><code>JDBC：(Java Data Base Connectivity)，用于直接调用SQL命令,面向数据库</code></li>
-<li><code>JPA：(Java Persistence API),操作实体对象,免除编写繁琐的SQL,面向对象</code><br>【<code>HIbernate即JPA的一种实现</code>】<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/Hibenate.png" alt=""></li>
-</ul>
-</li>
-</ul>
-</blockquote>
-<h3 id="2-操作步骤"><a href="#2-操作步骤" class="headerlink" title="2. 操作步骤"></a>2. 操作步骤</h3><blockquote>
-<ol>
-<li>配置 Spring 整合 JPA</li>
-<li>在 Spring 配置文件中配置 Spring Data，让 Spring 为声明的接口创建代理对象。</li>
-<li>声明持久层的接口，该接口继承自Repository接口(<code>开发中一般继承其子接口</code>)，并注入实体类及其主键类型<br>【<strong><code>spring容器实际通过AOP为我们提供的是SimpleJpaRepository（JpaRepository的实现类）的对象</code></strong>】</li>
-<li>在接口中声明需要的Method</li>
-<li>使用Spring为这些接口创建代理实例(<code>也可以通过JavaConfig,或者XML配置</code>)<br><code>&lt;jpa:repositories base-package=&quot;com.acme.repositories&quot;/&gt; (XML配置语句)</code></li>
-<li>获取Repository实例注入并使用它</li>
-</ol>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 1.声明一个继承自Repository的接口</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">PersonRepository</span> <span class="keyword">extends</span> <span class="title">Repository</span>&lt;<span class="title">User</span>, <span class="title">Long</span>&gt; </span>&#123; </span><br><span class="line">	<span class="comment">// 声明要查询的方法</span></span><br><span class="line">	<span class="function">List&lt;Person&gt; <span class="title">findByLastname</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.通过config为自定义接口创建代理对象</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.data.jpa.repository.config.EnableJpaRepositories;</span><br><span class="line"><span class="meta">@EnableJpaRepositories</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Config</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 注入Repository实例，并使用</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SomeClient</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Autowired</span></span><br><span class="line">	<span class="keyword">private</span> PersonRepository repository;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		List&lt;Person&gt; persons = repository.findByLastname(<span class="string">"Matthews"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-Repository接口"><a href="#3-Repository接口" class="headerlink" title="3. Repository接口"></a>3. Repository接口</h3><p><code>Spring-data-commons中提供</code></p>
-<blockquote>
-<p>Repository接口是 Spring Data 的一个核心接口,但是并不提供任何method，为一个名义接口</p>
-<ul>
-<li><code>开发者在自定义子接口中定义method</code></li>
-<li><code>Spring Data让我们可以只定义接口，只要遵循 Spring Data的规范，就</code><strong><code>无需写实现类</code></strong></li>
-</ul>
-</blockquote>
-<h3 id="4-Repository子接口"><a href="#4-Repository子接口" class="headerlink" title="4. Repository子接口"></a>4. Repository子接口</h3><p><code>标准接口位于Spring-data-commons</code><br><code>扩展接口位于Spring-data-jpa</code></p>
-<blockquote>
-<ul>
-<li>CrudRepository 标准接口 (<code>提供了最基本的对实体类的CRUD操作</code>)<ul>
-<li><code>增删改：save、delete、deleteAll</code></li>
-<li><code>查：findAll、findOne、count</code></li>
-</ul>
-</li>
-<li>PagingAndSortingRepository 标准接口(<code>继承自CrudRepository，提供了分页与排序功能</code>)<ul>
-<li><strong><code>排序</code></strong>：<code>Iterable&lt;T&gt; findAll(Sort sort);</code></li>
-<li><strong><code>分页查询（含排序功能）</code></strong>：<code>Page&lt;T&gt; findAll(Pageable pageable);</code></li>
-</ul>
-</li>
-<li>JpaRepository 扩展接口(<code>该接口提供了JPA的相关功能</code>)</li>
-</ul>
-</blockquote>
-<p>|method|Description|<br>|:-|:-|:-|<br>|<code>List&lt;T&gt; findAll()</code> |查找所有实体|<br>|<code>List&lt;T&gt; findAll(Sort sort)</code> |排序、查找所有实体|<br>|<code>List&lt;T&gt; save(Iterable&lt;? extends T&gt; entities)</code>|保存集合|</p>
-<blockquote>
-<ul>
-<li>JpaSpecificationExecutor 扩展接口(<code>不属于Repository体系，实现一组JPA Criteria查询相关的方法</code>)</li>
-<li>Specification：Spring Data JPA提供的查询规范，用于复杂的查询(<code>类似于QBC查询</code>)</li>
-<li>自定义Repository子接口</li>
-</ul>
-</blockquote>
-<h2 id="二-操作流程"><a href="#二-操作流程" class="headerlink" title="二.操作流程"></a>二.操作流程</h2><p><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/Spring%20Data%20repository.png" alt=""></p>
-<blockquote>
-<p>在Spring Data repository 抽象的接口中心是仓库(Repository).</p>
-</blockquote>
-<h3 id="1-定义repository接口"><a href="#1-定义repository接口" class="headerlink" title="1. 定义repository接口"></a>1. 定义repository接口</h3><blockquote>
-<p>自定义一个接口，继承某个Repository的子接口(<code>需要泛型注入Entity类和一个主键类型</code>)</p>
-<ul>
-<li>子接口举隅<ul>
-<li><code>如果对象要实现CRUD操作，需要继承CrudRepository接口</code></li>
-<li><code>如果还要在此基础上实现分页查询，需要继承PagingAndSortingRepository接口</code></li>
-</ul>
-</li>
-<li>repository调整<ul>
-<li><code>除了继承Spring Data接口，也能通过@RepositoryDefinition声明自定义的Repository接口</code></li>
-<li><code>在自定义接口中，可以选择性地暴露某些method，从而实现定义自己的抽象</code><br>【暴露的接口，会通过动态代理获取实现类(如SimpleJapRepository)的method】</li>
-</ul>
-</li>
-</ul>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义一个基础接口，供所有的domain接口使用(暴露findOne，save方法)</span></span><br><span class="line"><span class="meta">@NoRepositoryBean</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">MyBaseRepository</span>&lt;<span class="title">T</span> <span class="title">ID</span> <span class="keyword">extends</span> <span class="title">Serializable</span>&gt; <span class="keyword">extends</span> <span class="title">Repository</span>&lt;<span class="title">T</span>,<span class="title">ID</span>&gt;</span>&#123;</span><br><span class="line">     <span class="function">T <span class="title">findOne</span><span class="params">(ID id)</span></span>;</span><br><span class="line">     <span class="function">T <span class="title">save</span><span class="params">(T entity)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 继承基础接口（暴露通过email查询对象的方法）</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserRepository</span> <span class="keyword">extends</span> <span class="title">MyBaseRepository</span>&lt;<span class="title">User</span>,<span class="title">Long</span>&gt;</span>&#123;</span><br><span class="line">    <span class="function">User <span class="title">findByEmailAddress</span><span class="params">(EmailAddress emailAddress)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="2-定义查询method"><a href="#2-定义查询method" class="headerlink" title="2. 定义查询method"></a>2. 定义查询method</h3><blockquote>
-<p>Repository代理提供两种方式获取特定查询<br><code>依据方法名直接导出查询</code> + <code>手动定义查询</code></p>
-</blockquote>
-<h4 id="2-1-查找策略"><a href="#2-1-查找策略" class="headerlink" title="2.1  查找策略"></a>2.1  查找策略</h4><p><code>可用于仓库基础结构来解决查询</code></p>
-<blockquote>
-<ul>
-<li>实现方式：<ul>
-<li><code>xml配置(query-lookup-strategy属性)</code></li>
-<li><code>注解声明(Enable${store}Repositories中声明queryLookupStrategy属性)</code></li>
-</ul>
-</li>
-<li>策略分类 <ul>
-<li><code>CREATE：通过查询方法名构建一个特别的数据查询</code></li>
-<li><code>USE_DECLARED_QUERY：尝试找到一个声明查询并在找不到的时候抛出一个异常</code></li>
-<li><code>CREATE_IF_NOT_FOUND：综合上述两者的功能</code></li>
-</ul>
-</li>
-</ul>
-</blockquote>
-<h4 id="2-2-创建查询"><a href="#2-2-创建查询" class="headerlink" title="2.2 创建查询"></a>2.2 创建查询</h4><blockquote>
-<p>内置的查询生成器会剔除方法名中的关键字（<code>诸如find/read/query/count/get...by</code>），并解析剩下的内容</p>
-<ul>
-<li><code>Distinct标志：</code></li>
-<li><code>by：后面一般为查询条件，多个条件以and/or连接</code></li>
-<li><code>属性表达式你也可以使用可支持的操作比如Between(区间查询),LessThan,GreaterThan,Like(模糊查询)</code></li>
-<li><code>方法解析支持为某些属性设置一个IgnoreCase标志</code></li>
-<li><code>通过增加一个OrderBy字段实现按照属性排序</code></li>
-</ul>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">PersonRepository</span> <span class="keyword">extends</span> <span class="title">Repository</span>&lt;<span class="title">user</span>,<span class="title">Long</span>&gt;</span>&#123;</span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByEmailAddressAndLastname</span><span class="params">(EmailAddress emailAddress, String lastname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Enables the distinct flag for the query</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findDistinctPeopleByLastnameOrFirstname</span><span class="params">(String lastname,String firstname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findPeopleDistinctByLastnameOrFirstname</span><span class="params">(String lastname, String firstname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Enabling ignoring case for an individual property</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameIgnoreCase</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">    <span class="comment">// Enabling ignoring case for all suitable properties</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameAndFirstnameAllIgnoreCase</span><span class="params">(String lastname, String firstname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Enabling static ORDER BY for a query</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameOrderByFirstnameAsc</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameOrderByFirstnameDesc</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="2-3-属性表达式"><a href="#2-3-属性表达式" class="headerlink" title="2.3 属性表达式"></a>2.3 属性表达式</h4><p><code>用于自定义条件查询</code></p>
-<blockquote>
-<p>属性表达式只能引用实体类的直接属性<br><code>内置查询器，依据固定规律，解析method名中的attribute作为查询条件</code></p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 解析：1. 创建属性遍历x.address.zipCode</span></span><br><span class="line"><span class="comment">//      2. 如果上述解析不成功：则会按照驼峰法则从右开始拆分：AddressZip + Code --&gt; Address + ZipCode</span></span><br><span class="line"><span class="function">List&lt;Person&gt; <span class="title">findByAddressZipCode</span><span class="params">(ZipCode zipCode)</span></span>;</span><br><span class="line"><span class="comment">// 利用下划线(_)可以解决上述2中的歧义 【前提：Java属性命名中严格规范，不要使用下划线】</span></span><br><span class="line"><span class="function">List&lt;Person&gt; <span class="title">findByAddress_ZipCode</span><span class="params">(ZipCode zipCode)</span></span>;</span><br></pre></td></tr></table></figure>
-<h4 id="2-4-特殊参数处理"><a href="#2-4-特殊参数处理" class="headerlink" title="2.4 特殊参数处理"></a>2.4 特殊参数处理</h4><blockquote>
-<ul>
-<li>Pageable：</li>
-<li>Slice：</li>
-<li>Sort：</li>
-</ul>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 利用Spring框架提供的Pageable实例，来动态地实现添加分页</span></span><br><span class="line"><span class="function">Page&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="comment">// Slice仅仅知道是否有下一个Slice可用（消耗更小）</span></span><br><span class="line"><span class="function">Slice&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="comment">// 利用...Sort实例实现排序</span></span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Sort sort)</span></span>;k</span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br></pre></td></tr></table></figure>
-<h4 id="2-5-限制查询"><a href="#2-5-限制查询" class="headerlink" title="2.5 限制查询"></a>2.5 限制查询</h4><blockquote>
-<p>关键字：<code>first</code>、<code>top</code>  （用于限制结果数）</p>
-<ul>
-<li><code>默认值为1，可以交替使用</code></li>
-<li><code>可以使用distinct</code></li>
-</ul>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function">User <span class="title">findFirstByOrderByLastnameAsc</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">User <span class="title">findTopByOrderByAgeDesc</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">Page&lt;User&gt; <span class="title">queryFirst10ByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="function">Slice&lt;User&gt; <span class="title">findTop3ByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findFirst10ByLastname</span><span class="params">(String lastname, Sort sort)</span></span>;</span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findTop10ByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br></pre></td></tr></table></figure>
-<h4 id="2-6-流查询"><a href="#2-6-流查询" class="headerlink" title="2.6 流查询"></a>2.6 流查询</h4><p><code>Stream</code></p>
-<blockquote>
-<p>查询方法能对以JAVA 8的Stream为返回的结果进行逐步处理<br><code>一个数据流可能包裹底层数据存储特定资源，因此在使用后必须关闭。 你也可以使用close()方法或者JAVA 7 try-with-resources区块手动关闭数据流</code></p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Query</span>(<span class="string">"select u from User u"</span>)</span><br><span class="line"><span class="function">Stream&lt;User&gt; <span class="title">findAllByCustomQueryAndStream</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">Stream&lt;User&gt; <span class="title">readAllByFirstnameNotNull</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Query</span>(<span class="string">"select u from User u"</span>)</span><br><span class="line"><span class="function">Stream&lt;User&gt; <span class="title">streamAllPaged</span><span class="params">(Pageable pageable)</span></span>;</span><br></pre></td></tr></table></figure>
-<h3 id="3-创建repository实例"><a href="#3-创建repository实例" class="headerlink" title="3. 创建repository实例"></a>3. 创建repository实例</h3><blockquote>
-<p>使用namespace，创建repository接口的bean实例</p>
-</blockquote>
-<ul>
-<li>XML配置<blockquote>
-<p><code>每一个Spring Data模块都包含repositories元素，因此简单的基于base-package定义即可进行Spring扫描</code></p>
-</blockquote>
-</li>
-</ul>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans:beans</span> <span class="attr">xmlns:beans</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/data/jpa"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">repositories</span> <span class="attr">base-package</span>=<span class="string">"com.acme.repositories"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans:beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>JavaConfig<blockquote>
-<p>在一个JavaConfig类中使用<code>@Enable${store}Repositories</code>声明来触发repository的构建  </p>
-</blockquote>
-</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JPA声明</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableJpaRepositories</span>(<span class="string">"com.acme.repositories"</span>)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ApplicationConfiguration</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Bean</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> EntityManagerFactory <span class="title">entityManagerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// …</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>独立使用<blockquote>
-<p>可以在spring容器外使用repository组件</p>
-</blockquote>
-</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">RepositoryFactorySupport factory = … <span class="comment">// Instantiate factory here</span></span><br><span class="line">UserRepository repository = factory.getRepository(UserRepository.class);</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-自定义实现repositories"><a href="#4-自定义实现repositories" class="headerlink" title="4. 自定义实现repositories"></a>4. 自定义实现repositories</h3><blockquote>
-<p>允许实现自定义的功能（<code>包括CRUD和查询功能</code>）</p>
-</blockquote>
-<h4 id="4-1-针对单一repositories"><a href="#4-1-针对单一repositories" class="headerlink" title="4.1 针对单一repositories"></a>4.1 针对单一repositories</h4><blockquote>
-<p>自定义接口，并实现接口的方法，使用自定义的</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserRepositoryCustom</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someCustomMethod</span><span class="params">(User user)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserRepositoryImpl</span> <span class="keyword">implements</span> <span class="title">UserRepositoryCustom</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someCustomMethod</span><span class="params">(User user)</span> </span>&#123;</span><br><span class="line">	  <span class="comment">// Your custom implementation</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserRepository</span> <span class="keyword">extends</span> <span class="title">CrudRepository</span>&lt;<span class="title">User</span>, <span class="title">Long</span>&gt;, <span class="title">UserRepositoryCustom</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Declare query methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="4-2-针对所有repositories"><a href="#4-2-针对所有repositories" class="headerlink" title="4.2 针对所有repositories"></a>4.2 针对所有repositories</h4><blockquote>
-<p>添加自定义行为到所有的repository中</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@NoRepositoryBean</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MyRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span> <span class="keyword">extends</span> <span class="title">Serializable</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">PagingAndSortingRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span>&gt; </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">sharedCustomMethod</span><span class="params">(ID id)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRepositoryImpl</span>&lt;<span class="title">T</span>, <span class="title">ID</span> <span class="keyword">extends</span> <span class="title">Serializable</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">SimpleJpaRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span>&gt; <span class="keyword">implements</span> <span class="title">MyRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span>&gt; </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> EntityManager entityManager;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">MyRepositoryImpl</span><span class="params">(JpaEntityInformation entityInformation,</span></span></span><br><span class="line"><span class="function"><span class="params">	                        EntityManager entityManager)</span> </span>&#123;</span><br><span class="line">	  <span class="keyword">super</span>(entityInformation, entityManager);</span><br><span class="line">	  <span class="comment">// Keep the EntityManager around to used from the newly introduced methods.</span></span><br><span class="line">	  <span class="keyword">this</span>.entityManager = entityManager;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sharedCustomMethod</span><span class="params">(ID id)</span> </span>&#123;</span><br><span class="line">	  <span class="comment">// implementation goes here</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="三-常用API-★★★"><a href="#三-常用API-★★★" class="headerlink" title="三. 常用API(★★★)"></a>三. 常用API(★★★)</h2><blockquote>
-<p>本章节主要概述自定义数据库操作语句（<code>即Spring框架中repository实现类中未定义的sql</code>）</p>
-</blockquote>
-<h3 id="1-条件查询"><a href="#1-条件查询" class="headerlink" title="1. 条件查询"></a>1. 条件查询</h3><h4 id="1-1-根据method名自动生成"><a href="#1-1-根据method名自动生成" class="headerlink" title="1.1 根据method名自动生成"></a>1.1 根据method名自动生成</h4><p><code>即利用属性表达式(Property expressions)</code></p>
-<blockquote>
-<p>在接口中定义方法(<code>利用关键字</code> + <code>按照固定格式</code>)，无需实现，内置查询器会自动生成并在调用方法时注入相应的查询语句</p>
-<ul>
-<li><code>精确查询一列：findBy列名</code></li>
-<li><code>模糊查询一列：findBy列名Like</code></li>
-<li><code>精确查询多列：findBy列名And列名Like</code> 【按照驼峰命名】</li>
-</ul>
-</blockquote>
-<h4 id="1-2-配置-Query-★"><a href="#1-2-配置-Query-★" class="headerlink" title="1.2 配置@Query (★)"></a>1.2 配置@Query (★)</h4><blockquote>
-<p>当方法名不按命名规则写的查询方法，可以配置@Query 绑定JPAL语句或者SQL语句</p>
-<ul>
-<li><code>使用</code><strong><code>JPAL</code></strong><code>语句，设置属性nativeQuery=false</code><br>【<code>实际上，JPAL语句，在语法上完全同HQL，只是称谓不同</code>】</li>
-<li><code>使用</code><strong><code>SQL</code></strong><code>语句，设置属性nativeQuery=true</code></li>
-</ul>
-</blockquote>
-<h4 id="1-3-实体类上配置-NamedQuery"><a href="#1-3-实体类上配置-NamedQuery" class="headerlink" title="1.3 实体类上配置@NamedQuery"></a>1.3 实体类上配置@NamedQuery</h4><blockquote>
-<p>在接口的方法上配置<code>@Query</code>，并在实体类上定义<code>@NamedQuery(name=&quot;方法名&quot;，query=&quot;语句&quot;)</code></p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">StandardRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Standard</span>, <span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">	<span class="comment">// 1.1 根据方法名自动生成 </span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;Standard&gt; <span class="title">findByName</span><span class="params">(String name)</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 1.2 配置@Query</span></span><br><span class="line">	<span class="meta">@Query</span>(value=<span class="string">"from Standard where name = ?"</span> ,nativeQuery=<span class="keyword">false</span>)</span><br><span class="line">	<span class="comment">// nativeQuery 为 false 配置JPQL 、 为true 配置SQL </span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;Standard&gt; <span class="title">queryName</span><span class="params">(String name)</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 1.3 配置@Query不写语句【然后在实体类中通过@NamedQuery定义】</span></span><br><span class="line">	<span class="meta">@Query</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;Standard&gt; <span class="title">queryName2</span><span class="params">(String name)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">////// 1.3 实体类中的定义【声明在类上】</span></span><br><span class="line"><span class="meta">@NamedQueries</span>(&#123;</span><br><span class="line">	<span class="meta">@NamedQuery</span>(name=<span class="string">"Standard.queryName2"</span>,query=<span class="string">"from Standard where name=?"</span>)&#125;)</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-带条件修改"><a href="#2-带条件修改" class="headerlink" title="2. 带条件修改"></a>2. 带条件修改</h3><blockquote>
-<p>使用<code>@Query</code>注解完成 ， 搭配使用<code>@Modifying</code>标记修改、删除操作</p>
-<ul>
-<li><code>在测试test中进行增删改操作时，需要在test方法上设置事务，并手动定义不rollback</code></li>
-</ul>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义修改的方法</span></span><br><span class="line"><span class="meta">@Query</span>(value=<span class="string">"update Standard set minLength=?2 where id =?1"</span>)</span><br><span class="line"><span class="meta">@Modifying</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateMinLength</span><span class="params">(Integer id , Integer minLength)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在test中进行测试</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="meta">@Transactional</span>  <span class="comment">// 声明事务</span></span><br><span class="line"><span class="meta">@Rollback</span>(<span class="keyword">false</span>) <span class="comment">// 声明不回滚（默认在test中操作结束，自动回滚）</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testUpdate</span><span class="params">()</span></span>&#123;</span><br><span class="line">	standRepository.updateMinLength(<span class="number">1</span>,<span class="number">15</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-分页查询"><a href="#3-分页查询" class="headerlink" title="3. 分页查询"></a>3. 分页查询</h3><blockquote>
-<ul>
-<li>Spring Data提供的标准接口PagingAndSortingRepository中，定义了实现分页的方法<ul>
-<li><code>Page&lt;T&gt; findAll(Pageable pageable)</code></li>
-</ul>
-</li>
-<li><strong>参数</strong>：<code>SpringData提供了PageRequest对象，作为Pageable接口的实现类</code><br>【<code>注意：PageRequest的page页码从0开始</code>】<ul>
-<li><code>public PageRequest(int page, int size)</code> 【构造器】</li>
-<li><code>public PageRequest(int page, int size, Sort sort)</code></li>
-</ul>
-</li>
-<li><strong>返回值</strong>：<code>分页的查询结果，会被自动封装为Page&lt;T&gt;</code><ul>
-<li><code>总页数：TotalPages</code></li>
-<li><code>页面详情：TotalElements</code></li>
-</ul>
-</li>
-</ul>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 实例化Pageable对象(传入参数：当前页码，当前页总记录数)</span></span><br><span class="line">Pageable pageable = <span class="keyword">new</span> PageRequest(page - <span class="number">1</span>, rows);<span class="comment">//PageRequest的page页码从0开始，所以进行-1</span></span><br><span class="line"><span class="comment">// 调用findAll方法，返回结果自动封装为Page&lt;T&gt;类型</span></span><br><span class="line">Page&lt;Standard&gt; pageData = standardRepository.findAll(pageable);</span><br></pre></td></tr></table></figure>
-<h3 id="4-查询关键字"><a href="#4-查询关键字" class="headerlink" title="4. 查询关键字"></a>4. 查询关键字</h3><blockquote>
-<p>在method名称中可以使用的<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/SpringDataApi1.png" alt=""><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/SpringDataApi.png" alt=""><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/SpringDataApi2.png" alt=""></p>
-</blockquote>
-<h2 id="四-参考文档"><a href="#四-参考文档" class="headerlink" title="四. 参考文档"></a>四. 参考文档</h2><h3 id="1-简介-1"><a href="#1-简介-1" class="headerlink" title="1. 简介"></a>1. 简介</h3><h4 id="1-1-命名空间-namespace"><a href="#1-1-命名空间-namespace" class="headerlink" title="1.1 命名空间(namespace)"></a>1.1 命名空间(namespace)</h4><blockquote>
-<p>Spring Data的JPA模块包含一个允许定义存储库bean的自定义命名空间（<code>包含JPA特有的某些特征和元素属性</code>）</p>
-</blockquote>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns:jpa</span>=<span class="string">"http://www.springframework.org/schema/data/jpa"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">jpa:repositories</span> <span class="attr">base-package</span>=<span class="string">"com.acme.repositories"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="1-2-注解配置"><a href="#1-2-注解配置" class="headerlink" title="1.2 注解配置"></a>1.2 注解配置</h4><blockquote>
-<p>Spring Data JPA存储库支持不仅可以通过XML命名空间激活，还可以通过JavaConfig使用注释</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableJpaRepositories</span></span><br><span class="line"><span class="meta">@EnableTransactionManagement</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ApplicationConfig</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Bean</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    EmbeddedDatabaseBuilder builder = <span class="keyword">new</span> EmbeddedDatabaseBuilder();</span><br><span class="line">    <span class="keyword">return</span> builder.setType(EmbeddedDatabaseType.HSQL).build();</span><br><span class="line">  &#125;</span><br><span class="line"><span class="comment">// 重点：创建LocalContainerEntityManagerFactoryBean而不是EntityManagerFactory</span></span><br><span class="line"><span class="comment">// （因为前者包含了异常机制）</span></span><br><span class="line">  <span class="meta">@Bean</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> LocalContainerEntityManagerFactoryBean <span class="title">entityManagerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    HibernateJpaVendorAdapter vendorAdapter = <span class="keyword">new</span> HibernateJpaVendorAdapter();</span><br><span class="line">    vendorAdapter.setGenerateDdl(<span class="keyword">true</span>);</span><br><span class="line">    LocalContainerEntityManagerFactoryBean factory = <span class="keyword">new</span> LocalContainerEntityManagerFactoryBean();</span><br><span class="line">    factory.setJpaVendorAdapter(vendorAdapter);</span><br><span class="line">    factory.setPackagesToScan(<span class="string">"com.acme.domain"</span>);</span><br><span class="line">    factory.setDataSource(dataSource());</span><br><span class="line">    <span class="keyword">return</span> factory;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Bean</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> PlatformTransactionManager <span class="title">transactionManager</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    JpaTransactionManager txManager = <span class="keyword">new</span> JpaTransactionManager();</span><br><span class="line">    txManager.setEntityManagerFactory(entityManagerFactory());</span><br><span class="line">    <span class="keyword">return</span> txManager;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="2-持久化实体"><a href="#2-持久化实体" class="headerlink" title="2. 持久化实体"></a>2. 持久化实体</h3><h3 id="3-查询方法"><a href="#3-查询方法" class="headerlink" title="3. 查询方法"></a>3. 查询方法</h3><h3 id="4-存储过程"><a href="#4-存储过程" class="headerlink" title="4. 存储过程"></a>4. 存储过程</h3><h3 id="5-事务管理"><a href="#5-事务管理" class="headerlink" title="5. 事务管理"></a>5. 事务管理</h3><h3 id="6-审查"><a href="#6-审查" class="headerlink" title="6. 审查"></a>6. 审查</h3>]]></content>
-      <categories>
-        <category>SpringCloud</category>
-      </categories>
-      <tags>
-        <tag>SpringCloud</tag>
-        <tag>SpringData</tag>
-        <tag>数据库</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Maven</title>
     <url>/2019/10/24/Maven/</url>
     <content><![CDATA[<blockquote>
@@ -661,6 +370,297 @@
       <tags>
         <tag>java</tag>
         <tag>maven</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Spring Data</title>
+    <url>/2019/10/24/Spring%20Data%E5%AE%9E%E6%88%98/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>To Do</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://stackoverflow.com/questions/11881548/jpa-or-jdbc-how-are-they-different" target="_blank" rel="noopener">JDBC与JPA的区别</a><ul>
+<li><code>JDBC是数据库访问的标准;JPA是ORM的标准</code></li>
+<li><code>JPA和JDBC之间的主要区别是抽象层次:JDBC是与数据库交互的低级标准,JPA是同一目的的较高标准</code></li>
+<li><code>JDBC是JPA的前身</code></li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="http://www.jianshu.com/p/49b31ef74ff3" target="_blank" rel="noopener">Hibernate与Mybatis与Spring Data</a><ul>
+<li><code>Hibernate是一个开放源代码的对象关系映射框架，它对JDBC进行了非常轻量级的对象封装</code>【开发难度大】</li>
+<li><code>MyBatis 本是apache的一个开源项目iBatis，着力于POJO与SQL之间的映射关系</code></li>
+<li><code>Spring Data是一个用于简化数据库访问，并支持云服务的开源框架。其主要目标是使得对数据的访问变得方便快捷，并支持map-reduce框架和云计算数据服务</code>【SQL的自由度低】</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> Predicate接口中的CriteriaQuery与CriteriaBuilder<ul>
+<li><del><code>CriteriaQuery:表达式查询语句</code></del></li>
+<li><code>CriteriaBuilder：面向对象查询语句(.equal(),.and(),.or(),.like())</code></li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <a href="http://www.hollischuang.com/archives/1658" target="_blank" rel="noopener"><strong>JDBC事务和JTA事务</strong></a><ul>
+<li><code>JDBC的一切行为包括事务是基于一个Connection的(在JDBC中是通过Connection对象进行事务管理(常用的和事务相关的方法是： setAutoCommit、commit、rollback等)</code></li>
+<li><code>Java Transaction API是一个Java企业版 的应用程序接口，在Java环境中，允许完成跨越多个XA资源的分布式事务</code>【处理分布式事务】</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>关于关联对象的懒加载处理</strong></li>
+</ul>
+</blockquote>
+<hr>
+<blockquote>
+<p><strong>Question：</strong></p>
+<ul>
+<li>test中的数据库操作，会报tansactionrequired异常，事务会自动回滚roll back<ul>
+<li><code>在test方法上手动设置@Transactional可以声明事务</code></li>
+<li><code>在test方法上手动设置@Rollback(false)，可以禁止回滚</code></li>
+</ul>
+</li>
+<li>进行save(Object)操作时，如果对象中有主键信息，会自动切换为修改操作<code>(因此：增、改均可以使用同一个方法save)</code><br><code>【小tips:可以在页面设置隐藏td用于存放id，可以根据实际情况进行自动判断，进行增加或者修改】</code></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一-概述"><a href="#一-概述" class="headerlink" title="一. 概述"></a>一. 概述</h2><blockquote>
+<p>为了简化并统一持久层的各种实现技术的API，Spring Data提供了一套标准的API，整合不同持久层</p>
+<ul>
+<li><code>spring-data-commons：一套标准API</code></li>
+<li><code>spring-data-jpa 基于整合JPA实现</code></li>
+</ul>
+</blockquote>
+<hr>
+<h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1.  简介"></a>1.  简介</h3><blockquote>
+<p>SpringData支持的持久层技术：</p>
+<ul>
+<li>NoSQL 存储：<code>MongoDB （文档数据库）</code>、<code>Neo4j（图形数据库）</code>、<code>Redis（键/值存储）</code>、<code>Hbase（列族数据库）</code></li>
+<li>关系数据存储技术：<code>JDBC</code>、<code>JPA</code><ul>
+<li><code>JDBC：(Java Data Base Connectivity)，用于直接调用SQL命令,面向数据库</code></li>
+<li><code>JPA：(Java Persistence API),操作实体对象,免除编写繁琐的SQL,面向对象</code><br>【<code>HIbernate即JPA的一种实现</code>】<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/Hibenate.png" alt=""></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="2-操作步骤"><a href="#2-操作步骤" class="headerlink" title="2. 操作步骤"></a>2. 操作步骤</h3><blockquote>
+<ol>
+<li>配置 Spring 整合 JPA</li>
+<li>在 Spring 配置文件中配置 Spring Data，让 Spring 为声明的接口创建代理对象。</li>
+<li>声明持久层的接口，该接口继承自Repository接口(<code>开发中一般继承其子接口</code>)，并注入实体类及其主键类型<br>【<strong><code>spring容器实际通过AOP为我们提供的是SimpleJpaRepository（JpaRepository的实现类）的对象</code></strong>】</li>
+<li>在接口中声明需要的Method</li>
+<li>使用Spring为这些接口创建代理实例(<code>也可以通过JavaConfig,或者XML配置</code>)<br><code>&lt;jpa:repositories base-package=&quot;com.acme.repositories&quot;/&gt; (XML配置语句)</code></li>
+<li>获取Repository实例注入并使用它</li>
+</ol>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 1.声明一个继承自Repository的接口</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">PersonRepository</span> <span class="keyword">extends</span> <span class="title">Repository</span>&lt;<span class="title">User</span>, <span class="title">Long</span>&gt; </span>&#123; </span><br><span class="line">	<span class="comment">// 声明要查询的方法</span></span><br><span class="line">	<span class="function">List&lt;Person&gt; <span class="title">findByLastname</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.通过config为自定义接口创建代理对象</span></span><br><span class="line"><span class="keyword">import</span> org.springframework.data.jpa.repository.config.EnableJpaRepositories;</span><br><span class="line"><span class="meta">@EnableJpaRepositories</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Config</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 注入Repository实例，并使用</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SomeClient</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Autowired</span></span><br><span class="line">	<span class="keyword">private</span> PersonRepository repository;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		List&lt;Person&gt; persons = repository.findByLastname(<span class="string">"Matthews"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Repository接口"><a href="#3-Repository接口" class="headerlink" title="3. Repository接口"></a>3. Repository接口</h3><p><code>Spring-data-commons中提供</code></p>
+<blockquote>
+<p>Repository接口是 Spring Data 的一个核心接口,但是并不提供任何method，为一个名义接口</p>
+<ul>
+<li><code>开发者在自定义子接口中定义method</code></li>
+<li><code>Spring Data让我们可以只定义接口，只要遵循 Spring Data的规范，就</code><strong><code>无需写实现类</code></strong></li>
+</ul>
+</blockquote>
+<h3 id="4-Repository子接口"><a href="#4-Repository子接口" class="headerlink" title="4. Repository子接口"></a>4. Repository子接口</h3><p><code>标准接口位于Spring-data-commons</code><br><code>扩展接口位于Spring-data-jpa</code></p>
+<blockquote>
+<ul>
+<li>CrudRepository 标准接口 (<code>提供了最基本的对实体类的CRUD操作</code>)<ul>
+<li><code>增删改：save、delete、deleteAll</code></li>
+<li><code>查：findAll、findOne、count</code></li>
+</ul>
+</li>
+<li>PagingAndSortingRepository 标准接口(<code>继承自CrudRepository，提供了分页与排序功能</code>)<ul>
+<li><strong><code>排序</code></strong>：<code>Iterable&lt;T&gt; findAll(Sort sort);</code></li>
+<li><strong><code>分页查询（含排序功能）</code></strong>：<code>Page&lt;T&gt; findAll(Pageable pageable);</code></li>
+</ul>
+</li>
+<li>JpaRepository 扩展接口(<code>该接口提供了JPA的相关功能</code>)</li>
+</ul>
+</blockquote>
+<p>|method|Description|<br>|:-|:-|:-|<br>|<code>List&lt;T&gt; findAll()</code> |查找所有实体|<br>|<code>List&lt;T&gt; findAll(Sort sort)</code> |排序、查找所有实体|<br>|<code>List&lt;T&gt; save(Iterable&lt;? extends T&gt; entities)</code>|保存集合|</p>
+<blockquote>
+<ul>
+<li>JpaSpecificationExecutor 扩展接口(<code>不属于Repository体系，实现一组JPA Criteria查询相关的方法</code>)</li>
+<li>Specification：Spring Data JPA提供的查询规范，用于复杂的查询(<code>类似于QBC查询</code>)</li>
+<li>自定义Repository子接口</li>
+</ul>
+</blockquote>
+<h2 id="二-操作流程"><a href="#二-操作流程" class="headerlink" title="二.操作流程"></a>二.操作流程</h2><p><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/Spring%20Data%20repository.png" alt=""></p>
+<blockquote>
+<p>在Spring Data repository 抽象的接口中心是仓库(Repository).</p>
+</blockquote>
+<h3 id="1-定义repository接口"><a href="#1-定义repository接口" class="headerlink" title="1. 定义repository接口"></a>1. 定义repository接口</h3><blockquote>
+<p>自定义一个接口，继承某个Repository的子接口(<code>需要泛型注入Entity类和一个主键类型</code>)</p>
+<ul>
+<li>子接口举隅<ul>
+<li><code>如果对象要实现CRUD操作，需要继承CrudRepository接口</code></li>
+<li><code>如果还要在此基础上实现分页查询，需要继承PagingAndSortingRepository接口</code></li>
+</ul>
+</li>
+<li>repository调整<ul>
+<li><code>除了继承Spring Data接口，也能通过@RepositoryDefinition声明自定义的Repository接口</code></li>
+<li><code>在自定义接口中，可以选择性地暴露某些method，从而实现定义自己的抽象</code><br>【暴露的接口，会通过动态代理获取实现类(如SimpleJapRepository)的method】</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义一个基础接口，供所有的domain接口使用(暴露findOne，save方法)</span></span><br><span class="line"><span class="meta">@NoRepositoryBean</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">MyBaseRepository</span>&lt;<span class="title">T</span> <span class="title">ID</span> <span class="keyword">extends</span> <span class="title">Serializable</span>&gt; <span class="keyword">extends</span> <span class="title">Repository</span>&lt;<span class="title">T</span>,<span class="title">ID</span>&gt;</span>&#123;</span><br><span class="line">     <span class="function">T <span class="title">findOne</span><span class="params">(ID id)</span></span>;</span><br><span class="line">     <span class="function">T <span class="title">save</span><span class="params">(T entity)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 继承基础接口（暴露通过email查询对象的方法）</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserRepository</span> <span class="keyword">extends</span> <span class="title">MyBaseRepository</span>&lt;<span class="title">User</span>,<span class="title">Long</span>&gt;</span>&#123;</span><br><span class="line">    <span class="function">User <span class="title">findByEmailAddress</span><span class="params">(EmailAddress emailAddress)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-定义查询method"><a href="#2-定义查询method" class="headerlink" title="2. 定义查询method"></a>2. 定义查询method</h3><blockquote>
+<p>Repository代理提供两种方式获取特定查询<br><code>依据方法名直接导出查询</code> + <code>手动定义查询</code></p>
+</blockquote>
+<h4 id="2-1-查找策略"><a href="#2-1-查找策略" class="headerlink" title="2.1  查找策略"></a>2.1  查找策略</h4><p><code>可用于仓库基础结构来解决查询</code></p>
+<blockquote>
+<ul>
+<li>实现方式：<ul>
+<li><code>xml配置(query-lookup-strategy属性)</code></li>
+<li><code>注解声明(Enable${store}Repositories中声明queryLookupStrategy属性)</code></li>
+</ul>
+</li>
+<li>策略分类 <ul>
+<li><code>CREATE：通过查询方法名构建一个特别的数据查询</code></li>
+<li><code>USE_DECLARED_QUERY：尝试找到一个声明查询并在找不到的时候抛出一个异常</code></li>
+<li><code>CREATE_IF_NOT_FOUND：综合上述两者的功能</code></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h4 id="2-2-创建查询"><a href="#2-2-创建查询" class="headerlink" title="2.2 创建查询"></a>2.2 创建查询</h4><blockquote>
+<p>内置的查询生成器会剔除方法名中的关键字（<code>诸如find/read/query/count/get...by</code>），并解析剩下的内容</p>
+<ul>
+<li><code>Distinct标志：</code></li>
+<li><code>by：后面一般为查询条件，多个条件以and/or连接</code></li>
+<li><code>属性表达式你也可以使用可支持的操作比如Between(区间查询),LessThan,GreaterThan,Like(模糊查询)</code></li>
+<li><code>方法解析支持为某些属性设置一个IgnoreCase标志</code></li>
+<li><code>通过增加一个OrderBy字段实现按照属性排序</code></li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">PersonRepository</span> <span class="keyword">extends</span> <span class="title">Repository</span>&lt;<span class="title">user</span>,<span class="title">Long</span>&gt;</span>&#123;</span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByEmailAddressAndLastname</span><span class="params">(EmailAddress emailAddress, String lastname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Enables the distinct flag for the query</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findDistinctPeopleByLastnameOrFirstname</span><span class="params">(String lastname,String firstname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findPeopleDistinctByLastnameOrFirstname</span><span class="params">(String lastname, String firstname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Enabling ignoring case for an individual property</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameIgnoreCase</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">    <span class="comment">// Enabling ignoring case for all suitable properties</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameAndFirstnameAllIgnoreCase</span><span class="params">(String lastname, String firstname)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Enabling static ORDER BY for a query</span></span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameOrderByFirstnameAsc</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">    <span class="function">List&lt;Person&gt; <span class="title">findByLastnameOrderByFirstnameDesc</span><span class="params">(String lastname)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-属性表达式"><a href="#2-3-属性表达式" class="headerlink" title="2.3 属性表达式"></a>2.3 属性表达式</h4><p><code>用于自定义条件查询</code></p>
+<blockquote>
+<p>属性表达式只能引用实体类的直接属性<br><code>内置查询器，依据固定规律，解析method名中的attribute作为查询条件</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 解析：1. 创建属性遍历x.address.zipCode</span></span><br><span class="line"><span class="comment">//      2. 如果上述解析不成功：则会按照驼峰法则从右开始拆分：AddressZip + Code --&gt; Address + ZipCode</span></span><br><span class="line"><span class="function">List&lt;Person&gt; <span class="title">findByAddressZipCode</span><span class="params">(ZipCode zipCode)</span></span>;</span><br><span class="line"><span class="comment">// 利用下划线(_)可以解决上述2中的歧义 【前提：Java属性命名中严格规范，不要使用下划线】</span></span><br><span class="line"><span class="function">List&lt;Person&gt; <span class="title">findByAddress_ZipCode</span><span class="params">(ZipCode zipCode)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="2-4-特殊参数处理"><a href="#2-4-特殊参数处理" class="headerlink" title="2.4 特殊参数处理"></a>2.4 特殊参数处理</h4><blockquote>
+<ul>
+<li>Pageable：</li>
+<li>Slice：</li>
+<li>Sort：</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 利用Spring框架提供的Pageable实例，来动态地实现添加分页</span></span><br><span class="line"><span class="function">Page&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="comment">// Slice仅仅知道是否有下一个Slice可用（消耗更小）</span></span><br><span class="line"><span class="function">Slice&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="comment">// 利用...Sort实例实现排序</span></span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Sort sort)</span></span>;k</span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="2-5-限制查询"><a href="#2-5-限制查询" class="headerlink" title="2.5 限制查询"></a>2.5 限制查询</h4><blockquote>
+<p>关键字：<code>first</code>、<code>top</code>  （用于限制结果数）</p>
+<ul>
+<li><code>默认值为1，可以交替使用</code></li>
+<li><code>可以使用distinct</code></li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function">User <span class="title">findFirstByOrderByLastnameAsc</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">User <span class="title">findTopByOrderByAgeDesc</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function">Page&lt;User&gt; <span class="title">queryFirst10ByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="function">Slice&lt;User&gt; <span class="title">findTop3ByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findFirst10ByLastname</span><span class="params">(String lastname, Sort sort)</span></span>;</span><br><span class="line"><span class="function">List&lt;User&gt; <span class="title">findTop10ByLastname</span><span class="params">(String lastname, Pageable pageable)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="2-6-流查询"><a href="#2-6-流查询" class="headerlink" title="2.6 流查询"></a>2.6 流查询</h4><p><code>Stream</code></p>
+<blockquote>
+<p>查询方法能对以JAVA 8的Stream为返回的结果进行逐步处理<br><code>一个数据流可能包裹底层数据存储特定资源，因此在使用后必须关闭。 你也可以使用close()方法或者JAVA 7 try-with-resources区块手动关闭数据流</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Query</span>(<span class="string">"select u from User u"</span>)</span><br><span class="line"><span class="function">Stream&lt;User&gt; <span class="title">findAllByCustomQueryAndStream</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">Stream&lt;User&gt; <span class="title">readAllByFirstnameNotNull</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Query</span>(<span class="string">"select u from User u"</span>)</span><br><span class="line"><span class="function">Stream&lt;User&gt; <span class="title">streamAllPaged</span><span class="params">(Pageable pageable)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="3-创建repository实例"><a href="#3-创建repository实例" class="headerlink" title="3. 创建repository实例"></a>3. 创建repository实例</h3><blockquote>
+<p>使用namespace，创建repository接口的bean实例</p>
+</blockquote>
+<ul>
+<li>XML配置<blockquote>
+<p><code>每一个Spring Data模块都包含repositories元素，因此简单的基于base-package定义即可进行Spring扫描</code></p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans:beans</span> <span class="attr">xmlns:beans</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/data/jpa"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">repositories</span> <span class="attr">base-package</span>=<span class="string">"com.acme.repositories"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans:beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>JavaConfig<blockquote>
+<p>在一个JavaConfig类中使用<code>@Enable${store}Repositories</code>声明来触发repository的构建  </p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// JPA声明</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableJpaRepositories</span>(<span class="string">"com.acme.repositories"</span>)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ApplicationConfiguration</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Bean</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> EntityManagerFactory <span class="title">entityManagerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// …</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>独立使用<blockquote>
+<p>可以在spring容器外使用repository组件</p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">RepositoryFactorySupport factory = … <span class="comment">// Instantiate factory here</span></span><br><span class="line">UserRepository repository = factory.getRepository(UserRepository.class);</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-自定义实现repositories"><a href="#4-自定义实现repositories" class="headerlink" title="4. 自定义实现repositories"></a>4. 自定义实现repositories</h3><blockquote>
+<p>允许实现自定义的功能（<code>包括CRUD和查询功能</code>）</p>
+</blockquote>
+<h4 id="4-1-针对单一repositories"><a href="#4-1-针对单一repositories" class="headerlink" title="4.1 针对单一repositories"></a>4.1 针对单一repositories</h4><blockquote>
+<p>自定义接口，并实现接口的方法，使用自定义的</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserRepositoryCustom</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someCustomMethod</span><span class="params">(User user)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserRepositoryImpl</span> <span class="keyword">implements</span> <span class="title">UserRepositoryCustom</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someCustomMethod</span><span class="params">(User user)</span> </span>&#123;</span><br><span class="line">	  <span class="comment">// Your custom implementation</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">UserRepository</span> <span class="keyword">extends</span> <span class="title">CrudRepository</span>&lt;<span class="title">User</span>, <span class="title">Long</span>&gt;, <span class="title">UserRepositoryCustom</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Declare query methods here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="4-2-针对所有repositories"><a href="#4-2-针对所有repositories" class="headerlink" title="4.2 针对所有repositories"></a>4.2 针对所有repositories</h4><blockquote>
+<p>添加自定义行为到所有的repository中</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@NoRepositoryBean</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MyRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span> <span class="keyword">extends</span> <span class="title">Serializable</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">PagingAndSortingRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span>&gt; </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">sharedCustomMethod</span><span class="params">(ID id)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRepositoryImpl</span>&lt;<span class="title">T</span>, <span class="title">ID</span> <span class="keyword">extends</span> <span class="title">Serializable</span>&gt;</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">SimpleJpaRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span>&gt; <span class="keyword">implements</span> <span class="title">MyRepository</span>&lt;<span class="title">T</span>, <span class="title">ID</span>&gt; </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> EntityManager entityManager;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">MyRepositoryImpl</span><span class="params">(JpaEntityInformation entityInformation,</span></span></span><br><span class="line"><span class="function"><span class="params">	                        EntityManager entityManager)</span> </span>&#123;</span><br><span class="line">	  <span class="keyword">super</span>(entityInformation, entityManager);</span><br><span class="line">	  <span class="comment">// Keep the EntityManager around to used from the newly introduced methods.</span></span><br><span class="line">	  <span class="keyword">this</span>.entityManager = entityManager;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sharedCustomMethod</span><span class="params">(ID id)</span> </span>&#123;</span><br><span class="line">	  <span class="comment">// implementation goes here</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="三-常用API-★★★"><a href="#三-常用API-★★★" class="headerlink" title="三. 常用API(★★★)"></a>三. 常用API(★★★)</h2><blockquote>
+<p>本章节主要概述自定义数据库操作语句（<code>即Spring框架中repository实现类中未定义的sql</code>）</p>
+</blockquote>
+<h3 id="1-条件查询"><a href="#1-条件查询" class="headerlink" title="1. 条件查询"></a>1. 条件查询</h3><h4 id="1-1-根据method名自动生成"><a href="#1-1-根据method名自动生成" class="headerlink" title="1.1 根据method名自动生成"></a>1.1 根据method名自动生成</h4><p><code>即利用属性表达式(Property expressions)</code></p>
+<blockquote>
+<p>在接口中定义方法(<code>利用关键字</code> + <code>按照固定格式</code>)，无需实现，内置查询器会自动生成并在调用方法时注入相应的查询语句</p>
+<ul>
+<li><code>精确查询一列：findBy列名</code></li>
+<li><code>模糊查询一列：findBy列名Like</code></li>
+<li><code>精确查询多列：findBy列名And列名Like</code> 【按照驼峰命名】</li>
+</ul>
+</blockquote>
+<h4 id="1-2-配置-Query-★"><a href="#1-2-配置-Query-★" class="headerlink" title="1.2 配置@Query (★)"></a>1.2 配置@Query (★)</h4><blockquote>
+<p>当方法名不按命名规则写的查询方法，可以配置@Query 绑定JPAL语句或者SQL语句</p>
+<ul>
+<li><code>使用</code><strong><code>JPAL</code></strong><code>语句，设置属性nativeQuery=false</code><br>【<code>实际上，JPAL语句，在语法上完全同HQL，只是称谓不同</code>】</li>
+<li><code>使用</code><strong><code>SQL</code></strong><code>语句，设置属性nativeQuery=true</code></li>
+</ul>
+</blockquote>
+<h4 id="1-3-实体类上配置-NamedQuery"><a href="#1-3-实体类上配置-NamedQuery" class="headerlink" title="1.3 实体类上配置@NamedQuery"></a>1.3 实体类上配置@NamedQuery</h4><blockquote>
+<p>在接口的方法上配置<code>@Query</code>，并在实体类上定义<code>@NamedQuery(name=&quot;方法名&quot;，query=&quot;语句&quot;)</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">StandardRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Standard</span>, <span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">	<span class="comment">// 1.1 根据方法名自动生成 </span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;Standard&gt; <span class="title">findByName</span><span class="params">(String name)</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 1.2 配置@Query</span></span><br><span class="line">	<span class="meta">@Query</span>(value=<span class="string">"from Standard where name = ?"</span> ,nativeQuery=<span class="keyword">false</span>)</span><br><span class="line">	<span class="comment">// nativeQuery 为 false 配置JPQL 、 为true 配置SQL </span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;Standard&gt; <span class="title">queryName</span><span class="params">(String name)</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 1.3 配置@Query不写语句【然后在实体类中通过@NamedQuery定义】</span></span><br><span class="line">	<span class="meta">@Query</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> List&lt;Standard&gt; <span class="title">queryName2</span><span class="params">(String name)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">////// 1.3 实体类中的定义【声明在类上】</span></span><br><span class="line"><span class="meta">@NamedQueries</span>(&#123;</span><br><span class="line">	<span class="meta">@NamedQuery</span>(name=<span class="string">"Standard.queryName2"</span>,query=<span class="string">"from Standard where name=?"</span>)&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-带条件修改"><a href="#2-带条件修改" class="headerlink" title="2. 带条件修改"></a>2. 带条件修改</h3><blockquote>
+<p>使用<code>@Query</code>注解完成 ， 搭配使用<code>@Modifying</code>标记修改、删除操作</p>
+<ul>
+<li><code>在测试test中进行增删改操作时，需要在test方法上设置事务，并手动定义不rollback</code></li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 定义修改的方法</span></span><br><span class="line"><span class="meta">@Query</span>(value=<span class="string">"update Standard set minLength=?2 where id =?1"</span>)</span><br><span class="line"><span class="meta">@Modifying</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateMinLength</span><span class="params">(Integer id , Integer minLength)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在test中进行测试</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="meta">@Transactional</span>  <span class="comment">// 声明事务</span></span><br><span class="line"><span class="meta">@Rollback</span>(<span class="keyword">false</span>) <span class="comment">// 声明不回滚（默认在test中操作结束，自动回滚）</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testUpdate</span><span class="params">()</span></span>&#123;</span><br><span class="line">	standRepository.updateMinLength(<span class="number">1</span>,<span class="number">15</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-分页查询"><a href="#3-分页查询" class="headerlink" title="3. 分页查询"></a>3. 分页查询</h3><blockquote>
+<ul>
+<li>Spring Data提供的标准接口PagingAndSortingRepository中，定义了实现分页的方法<ul>
+<li><code>Page&lt;T&gt; findAll(Pageable pageable)</code></li>
+</ul>
+</li>
+<li><strong>参数</strong>：<code>SpringData提供了PageRequest对象，作为Pageable接口的实现类</code><br>【<code>注意：PageRequest的page页码从0开始</code>】<ul>
+<li><code>public PageRequest(int page, int size)</code> 【构造器】</li>
+<li><code>public PageRequest(int page, int size, Sort sort)</code></li>
+</ul>
+</li>
+<li><strong>返回值</strong>：<code>分页的查询结果，会被自动封装为Page&lt;T&gt;</code><ul>
+<li><code>总页数：TotalPages</code></li>
+<li><code>页面详情：TotalElements</code></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 实例化Pageable对象(传入参数：当前页码，当前页总记录数)</span></span><br><span class="line">Pageable pageable = <span class="keyword">new</span> PageRequest(page - <span class="number">1</span>, rows);<span class="comment">//PageRequest的page页码从0开始，所以进行-1</span></span><br><span class="line"><span class="comment">// 调用findAll方法，返回结果自动封装为Page&lt;T&gt;类型</span></span><br><span class="line">Page&lt;Standard&gt; pageData = standardRepository.findAll(pageable);</span><br></pre></td></tr></table></figure>
+<h3 id="4-查询关键字"><a href="#4-查询关键字" class="headerlink" title="4. 查询关键字"></a>4. 查询关键字</h3><blockquote>
+<p>在method名称中可以使用的<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/SpringDataApi1.png" alt=""><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/SpringDataApi.png" alt=""><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/SpringDataApi2.png" alt=""></p>
+</blockquote>
+<h2 id="四-参考文档"><a href="#四-参考文档" class="headerlink" title="四. 参考文档"></a>四. 参考文档</h2><h3 id="1-简介-1"><a href="#1-简介-1" class="headerlink" title="1. 简介"></a>1. 简介</h3><h4 id="1-1-命名空间-namespace"><a href="#1-1-命名空间-namespace" class="headerlink" title="1.1 命名空间(namespace)"></a>1.1 命名空间(namespace)</h4><blockquote>
+<p>Spring Data的JPA模块包含一个允许定义存储库bean的自定义命名空间（<code>包含JPA特有的某些特征和元素属性</code>）</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xmlns:jpa</span>=<span class="string">"http://www.springframework.org/schema/data/jpa"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa</span></span></span><br><span class="line"><span class="tag"><span class="string">    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">jpa:repositories</span> <span class="attr">base-package</span>=<span class="string">"com.acme.repositories"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="1-2-注解配置"><a href="#1-2-注解配置" class="headerlink" title="1.2 注解配置"></a>1.2 注解配置</h4><blockquote>
+<p>Spring Data JPA存储库支持不仅可以通过XML命名空间激活，还可以通过JavaConfig使用注释</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableJpaRepositories</span></span><br><span class="line"><span class="meta">@EnableTransactionManagement</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ApplicationConfig</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Bean</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    EmbeddedDatabaseBuilder builder = <span class="keyword">new</span> EmbeddedDatabaseBuilder();</span><br><span class="line">    <span class="keyword">return</span> builder.setType(EmbeddedDatabaseType.HSQL).build();</span><br><span class="line">  &#125;</span><br><span class="line"><span class="comment">// 重点：创建LocalContainerEntityManagerFactoryBean而不是EntityManagerFactory</span></span><br><span class="line"><span class="comment">// （因为前者包含了异常机制）</span></span><br><span class="line">  <span class="meta">@Bean</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> LocalContainerEntityManagerFactoryBean <span class="title">entityManagerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    HibernateJpaVendorAdapter vendorAdapter = <span class="keyword">new</span> HibernateJpaVendorAdapter();</span><br><span class="line">    vendorAdapter.setGenerateDdl(<span class="keyword">true</span>);</span><br><span class="line">    LocalContainerEntityManagerFactoryBean factory = <span class="keyword">new</span> LocalContainerEntityManagerFactoryBean();</span><br><span class="line">    factory.setJpaVendorAdapter(vendorAdapter);</span><br><span class="line">    factory.setPackagesToScan(<span class="string">"com.acme.domain"</span>);</span><br><span class="line">    factory.setDataSource(dataSource());</span><br><span class="line">    <span class="keyword">return</span> factory;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Bean</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> PlatformTransactionManager <span class="title">transactionManager</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    JpaTransactionManager txManager = <span class="keyword">new</span> JpaTransactionManager();</span><br><span class="line">    txManager.setEntityManagerFactory(entityManagerFactory());</span><br><span class="line">    <span class="keyword">return</span> txManager;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-持久化实体"><a href="#2-持久化实体" class="headerlink" title="2. 持久化实体"></a>2. 持久化实体</h3><h3 id="3-查询方法"><a href="#3-查询方法" class="headerlink" title="3. 查询方法"></a>3. 查询方法</h3><h3 id="4-存储过程"><a href="#4-存储过程" class="headerlink" title="4. 存储过程"></a>4. 存储过程</h3><h3 id="5-事务管理"><a href="#5-事务管理" class="headerlink" title="5. 事务管理"></a>5. 事务管理</h3><h3 id="6-审查"><a href="#6-审查" class="headerlink" title="6. 审查"></a>6. 审查</h3>]]></content>
+      <categories>
+        <category>SpringCloud</category>
+      </categories>
+      <tags>
+        <tag>SpringCloud</tag>
+        <tag>SpringData</tag>
+        <tag>数据库</tag>
       </tags>
   </entry>
   <entry>
