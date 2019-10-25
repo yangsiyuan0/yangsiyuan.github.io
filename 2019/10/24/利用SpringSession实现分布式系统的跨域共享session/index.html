@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="git," />
+  <meta name="keywords" content="SpringSession,session,分布式,跨域," />
 
 
 
@@ -79,18 +79,20 @@
 
 
 
-<meta name="description" content="一.分支管理开发过程中主要存在以下分支： 123456- master- dev- hotfix-[问题名称][bug编号]- feature-[功能名称]- bugfix-[bug编号]- refactor-[重构名称] 1. master分支 稳定的可发布版本 由发布人负责管理(合并操作) 不允许提交代码、不允许开发  2. dev分支 不稳定分支，功能完整，允许bug 原则上不允许直接在de">
-<meta name="keywords" content="git">
+<meta name="description" content="一. 前言在Web项目开发中，会话管理是一个很重要的部分，用于存储与用户相关的数据。通常是由符合session规范的容器来负责存储管理，这也意味着一旦容器关闭、重启，会导致会话失效（在tomcat中，由每个context容器内的Manager对象来管理session）。 目前，流行的分布式架构下，出现了跨服务器无法共享session的问题。对此，通常的解决方案为，利用redis、JDBC等存储介质">
+<meta name="keywords" content="SpringSession,session,分布式,跨域">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Git工作流">
-<meta property="og:url" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;2019&#x2F;10&#x2F;24&#x2F;Git%E5%B7%A5%E4%BD%9C%E6%B5%81&#x2F;index.html">
+<meta property="og:title" content="利用SpringSession实现分布式系统的跨域共享session">
+<meta property="og:url" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;2019&#x2F;10&#x2F;24&#x2F;%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession&#x2F;index.html">
 <meta property="og:site_name" content="小土狗的博客">
-<meta property="og:description" content="一.分支管理开发过程中主要存在以下分支： 123456- master- dev- hotfix-[问题名称][bug编号]- feature-[功能名称]- bugfix-[bug编号]- refactor-[重构名称] 1. master分支 稳定的可发布版本 由发布人负责管理(合并操作) 不允许提交代码、不允许开发  2. dev分支 不稳定分支，功能完整，允许bug 原则上不允许直接在de">
+<meta property="og:description" content="一. 前言在Web项目开发中，会话管理是一个很重要的部分，用于存储与用户相关的数据。通常是由符合session规范的容器来负责存储管理，这也意味着一旦容器关闭、重启，会导致会话失效（在tomcat中，由每个context容器内的Manager对象来管理session）。 目前，流行的分布式架构下，出现了跨服务器无法共享session的问题。对此，通常的解决方案为，利用redis、JDBC等存储介质">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;yangsiyuan0&#x2F;GitPic&#x2F;master&#x2F;evernote&#x2F;git%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B%E5%9B%BE.png">
-<meta property="og:updated_time" content="2019-10-24T08:41:51.873Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;springSessionFeature.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;springSessionModule.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;springSessionRedis.png">
+<meta property="og:updated_time" content="2019-10-25T05:34:31.672Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;yangsiyuan0&#x2F;GitPic&#x2F;master&#x2F;evernote&#x2F;git%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B%E5%9B%BE.png">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;springSessionFeature.png">
 
 
 
@@ -120,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="https://yangsiyuan0.github.io/2019/10/24/Git工作流/"/>
+  <link rel="canonical" href="https://yangsiyuan0.github.io/2019/10/24/利用SpringSession实现分布式系统的跨域共享session/"/>
 
 
 
 
 
-  <title>Git工作流 | 小土狗的博客</title>
+  <title>利用SpringSession实现分布式系统的跨域共享session | 小土狗的博客</title>
   
 
 
@@ -297,7 +299,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://yangsiyuan0.github.io/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/">
+    <link itemprop="mainEntityOfPage" href="https://yangsiyuan0.github.io/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="杨思远">
@@ -314,7 +316,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">Git工作流</h2>
+          <h2 class="post-title" itemprop="name headline">利用SpringSession实现分布式系统的跨域共享session</h2>
         
 
         <div class="post-meta">
@@ -349,8 +351,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/git/" itemprop="url" rel="index">
-                    <span itemprop="name">git</span>
+                  <a href="/categories/SpringBoot/" itemprop="url" rel="index">
+                    <span itemprop="name">SpringBoot</span>
                   </a>
                 </span>
 
@@ -367,8 +369,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count valine-comment-count" data-xid="/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/" itemprop="commentCount"></span>
+                <a href="/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -390,7 +392,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  580
+                  2.3k
                 </span>
               
 
@@ -406,7 +408,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  9
                 </span>
               
             </div>
@@ -427,65 +429,145 @@
       
 
       
-        <h1 id="一-分支管理"><a href="#一-分支管理" class="headerlink" title="一.分支管理"></a>一.分支管理</h1><p>开发过程中主要存在以下分支：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- master</span><br><span class="line">- dev</span><br><span class="line">- hotfix-[问题名称][bug编号]</span><br><span class="line">- feature-[功能名称]</span><br><span class="line">- bugfix-[bug编号]</span><br><span class="line">- refactor-[重构名称]</span><br></pre></td></tr></table></figure>
-<h2 id="1-master分支"><a href="#1-master分支" class="headerlink" title="1. master分支"></a>1. master分支</h2><ul>
-<li>稳定的可发布版本</li>
-<li>由发布人负责管理(合并操作)</li>
-<li>不允许提交代码、不允许开发</li>
-</ul>
-<h2 id="2-dev分支"><a href="#2-dev分支" class="headerlink" title="2. dev分支"></a>2. dev分支</h2><ul>
-<li>不稳定分支，功能完整，允许bug</li>
-<li>原则上不允许直接在dev分支上进行功能开发，必须新建feature分支进行开发</li>
-</ul>
-<h2 id="3-hotfix-问题名称-bug编号-分支"><a href="#3-hotfix-问题名称-bug编号-分支" class="headerlink" title="3. hotfix-[问题名称][bug编号]分支"></a>3. hotfix-[问题名称][bug编号]分支</h2><ul>
-<li>从master分支创建，横线后面跟上问题名称或者对应的bug编号，仅仅适用于<strong>生产线问题紧急修复</strong>！！！</li>
-<li>修复完成，测试通过，合并到master和dev分支上，然后将此分支删除</li>
-</ul>
-<h2 id="4-feature-功能名称-分支"><a href="#4-feature-功能名称-分支" class="headerlink" title="4. feature-[功能名称]分支"></a>4. feature-[功能名称]分支</h2><ul>
-<li>从dev分支创建，横线后跟功能名称，用于新功能开发，每天下班前push提交到远程</li>
-<li>开发完成以后，在远程发起向dev分支的合并请求，由指定的CodeReview人员审查通过以后进行合并，并删除该分支</li>
-</ul>
-<h2 id="5-bugfix-bug编号-分支"><a href="#5-bugfix-bug编号-分支" class="headerlink" title="5. bugfix-[bug编号]分支"></a>5. bugfix-[bug编号]分支</h2><ul>
-<li>从dev分支创建，用于修改测试提出的bug，横线后跟bug编号</li>
-<li>修复以后，在远程发起向dev分支的合并请求，并指定提交者自身（或其他人）作为CodeReview，合并以后删除该分支</li>
-</ul>
-<h2 id="6-refactor-重构名称-分支"><a href="#6-refactor-重构名称-分支" class="headerlink" title="6. refactor-[重构名称]分支"></a>6. refactor-[重构名称]分支</h2><ul>
-<li>从dev分支创建，用于代码的<strong>重大规模重构</strong>（小规模重构创建feature分支即可）</li>
-<li>重构以后，必须经过严格测试通过，才能向dev分支合并</li>
-</ul>
-<h1 id="二-Commit提交规范"><a href="#二-Commit提交规范" class="headerlink" title="二. Commit提交规范"></a>二. Commit提交规范</h1><h2 id="1-备注格式"><a href="#1-备注格式" class="headerlink" title="1. 备注格式"></a>1. 备注格式</h2><p>[类型描述]，类型如下图所示</p>
-<table>
-<thead>
-<tr>
-<th align="left">类型</th>
-<th align="left">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">feat</td>
-<td align="left">feature,即新开发的功能</td>
-</tr>
-<tr>
-<td align="left">fix</td>
-<td align="left">问题修复</td>
-</tr>
-<tr>
-<td align="left">refactor</td>
-<td align="left">重构代码</td>
-</tr>
-<tr>
-<td align="left">doc</td>
-<td align="left">增加文档(如ReadMe)、注释</td>
-</tr>
-</tbody></table>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fix:修复身份证含字母X的用户无法注册问题 </span><br><span class="line">fix: 紧急修复生产线用户积分不显示的问题 </span><br><span class="line">feat:商品详情页功能 </span><br><span class="line">doc:增加项目readme文档，修改结算条款结算逻辑的注释</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="2-提交频率"><a href="#2-提交频率" class="headerlink" title="2. 提交频率"></a>2. 提交频率</h2><ol>
-<li>每天下班前必须提交feature分支，并push到远程</li>
-<li>hotfix、feature、bugfix、refactor分支尽量按照功能点或修复重构的问题及时commit（不要求push）<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/git%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt=""></li>
+        <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>在Web项目开发中，会话管理是一个很重要的部分，用于存储与用户相关的数据。通常是由符合session规范的容器来负责存储管理，这也意味着一旦容器关闭、重启，会导致会话失效（在tomcat中，由每个context容器内的Manager对象来管理session）。</p>
+<p>目前，流行的分布式架构下，出现了跨服务器无法共享session的问题。对此，通常的解决方案为，利用redis、JDBC等存储介质，实现session数据的持久化，进而实现分布式会话管理，具体而言，分为如下三种：</p>
+<blockquote>
+<ol>
+<li>使用容器扩展来实现：比如基于Tomcat的tomcat-redis-session-manager，基于Jetty的jetty-session-redis</li>
 </ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>自己实现会话管理的工具类(包括Session管理和Cookie管理)：在需要使用会话的时候都从自己的工具类中获取，而工具类后端存储可以放到Redis中【快融当前采信的方式】</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>使用框架的会话管理工具：即本文中的springSession，基于spring框架，利用spring-data-redis连接池，替换servlet中的会话管理，实现脱离容器而不用改变代码</li>
+</ol>
+</blockquote>
+<h2 id="二-Spring-session简介"><a href="#二-Spring-session简介" class="headerlink" title="二. Spring-session简介"></a>二. Spring-session简介</h2><h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h3><p>简而言之，spring Session 提供了 一套API 和实现，用于管理用户的 Session 信息，基于此概念，其具有如下特性：</p>
+<blockquote>
+<ul>
+<li>Session持久化在外部存储介质中，通过配置自行切换(redis,mongo, Apache Geode)</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>控制 sessionid 如何在客户端和服务器之间进行交换，便于编写 Restful API (从 HTTP 头信息中获取 sessionid ，而不必再依赖于 cookie)</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>非 Web 请求的处理代码中，能够访问 session 数据</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>支持每个浏览器上使用多个 session<br><img src="/images/springSessionFeature.png" alt=""></li>
+</ul>
+</blockquote>
+<h3 id="2-模块"><a href="#2-模块" class="headerlink" title="2. 模块"></a>2. 模块</h3><p>Spring-session具体提供了如下四个模块：<br> <img src="/images/springSessionModule.png" alt=""></p>
+<h3 id="3-关键接口-类"><a href="#3-关键接口-类" class="headerlink" title="3. 关键接口/类"></a>3. 关键接口/类</h3><p>实现session管理器的时候，有两个必须要解决的核心问题：如何(利用外部存储介质)构建集群环境下高可用的session，对于传入的请求该如何确定该用哪个session实例。归根结底，关键问题在于sessionId如何传递？？？</p>
+<blockquote>
+<ol>
+<li>针对第一个问题，Spring Session定义了一组标准的接口，可以通过实现这些接口间接访问底层的数据存储：<ul>
+<li>org.springframework.session.Session<br>  <code>定义了session的基本功能：设置、移除属性(该接口并不关心具体存储介质)，因此具有比servletHttpSession更广泛的应用场景</code></li>
+<li>org.springframework.session.ExpiringSession<br>  <code>session接口的扩展，提供判断session是否过期(一个典型的实现类RedisSession)</code></li>
+<li>org.springframework.session.SessionRepository<br>  <code>定义了创建、保存、删除以及检索session的方法，将Session实例真正保存到数据存储的逻辑是在这个接口的实现中编码完成的(一个典型的实现类RedisOperationsSessionRepository)</code></li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>针对第二个问题，就HTTP协议而言， Spring Session定义了一个接口两个默认实现类：<ul>
+<li>HttpSessionStrategy接口</li>
+<li>CookieHttpSessionStrategy实现类(使用cookie将请求与session id关联)</li>
+<li>HeaderHttpSessionStrategy实现类(使用header将请求与session id关联)</li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>相关包装类(实现对http的支持)<ul>
+<li>SessionRepositoryRequestWrapper</li>
+<li>SessionRepositoryResponseWrapper<br><code>Spring-session对HTTP的支持是通过标准的servlet filter来实现的，这个filter必须要配置为拦截所有的web应用请求，并且它应该是filter链中的第一个filter。Spring Session filter会确保随后调用javax.servlet.http.HttpServletRequest的getSession()方法时，都会返回Spring Session的HttpSession实例，而不是应用服务器默认的HttpSession</code></li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="4">
+<li>过滤器<ul>
+<li>SessionRepositoryFilter<br><code>通过实现ServletFilter接口，创建3)中请求与响应对象，然后调用其余的filter，实现获得的session对象均为springsession的实例</code></li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<h3 id="4-生命周期"><a href="#4-生命周期" class="headerlink" title="4. 生命周期"></a>4. 生命周期</h3><h4 id="4-1-创建session"><a href="#4-1-创建session" class="headerlink" title="4.1 创建session"></a>4.1 创建session</h4><p>RedisSession 在创建时设置 3 个变量 creationTime ，maxInactiveInterval ，lastAccessedTime</p>
+<h4 id="4-2-获取session"><a href="#4-2-获取session" class="headerlink" title="4.2 获取session"></a>4.2 获取session</h4><p>应用通过getSession(boolean create)方法来获取session数据【create 表示 session 不存在时是否创建新的 session】，具体步骤如下：</p>
+<ul>
+<li>getSession方法首先请求的.CURRENT_SESSION属性来获取 currentSession</li>
+<li>获取不到，则从 request 取出sessionId【该步骤依赖具体的 HttpSessionStrategy 的实现】</li>
+<li>然后读取 spring:session:sessions:[sessionId] 的值，同时根据 lastAccessedTime 和 MaxInactiveIntervalInSeconds 来判断这个 session 是否过期。</li>
+<li>如果request中没有sessionId ，说明该用户是第一次访问，会根据不同的实现来创建一个新的 session</li>
+</ul>
+<h4 id="4-3-删除session"><a href="#4-3-删除session" class="headerlink" title="4.3 删除session"></a>4.3 删除session</h4><p>spring session在访问有效期内，每一次访问都会更新 lastAccessedTime 的值，过期时间为lastAccessedTime + maxInactiveInterval ，也即在有效期内每访问一次，有效期就向后延长 maxInactiveInterval，对于过期数据，一般有如下三种删除策略</p>
+<ul>
+<li>定时删除: 即在设置键的过期时间的同时，创建一个定时器， 当键的过期时间到来时，立即删除。</li>
+<li>惰性删除，即在访问键的时候，判断键是否过期，过期则删除，否则返回该键值</li>
+<li>定期删除，即每隔一段时间，程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定</li>
+</ul>
+<h3 id="5-Spring-session在-redis中的数据结构"><a href="#5-Spring-session在-redis中的数据结构" class="headerlink" title="5. Spring-session在 redis中的数据结构"></a>5. Spring-session在 redis中的数据结构</h3><ul>
+<li>SET 类型的spring:session:expireations：<br>min 表示从 1970 年 1 月 1 日 0 点 0 分经过的分钟数， SET 集合的 member 为 expires:[sessionId] ,表示 members 会在 min 分钟后过期</li>
+<li>String 类型的spring:session:sessions:expires:[sessionId]：<br>该数据的 TTL 表示 sessionId 过期的剩余时间，即 maxInactiveInterval</li>
+<li>Hash 类型的spring:session:sessions:[sessionId]：<br>session 保存的数据，记录了 creationTime，maxInactiveInterval，lastAccessedTime，attribute。前两个数据是用于 session 过期管理的辅助数据结构<h3 id="6-注意事项"><a href="#6-注意事项" class="headerlink" title="6.注意事项"></a>6.注意事项</h3></li>
+<li>spring-session 要求 Redis 版本在2.8及以上</li>
+<li>默认情况下，session 存储在 redis 的 key 是“spring:session::”，但如果有多个系统同时使用一个 redis，则会冲突，此时应该配置 redisNamespace 值</li>
+<li>如果想在 session 中保存一个对象，必须实现了 Serializable接口</li>
+<li>session 的域不同会生成新的 session 的，需进行网关代理、负载均衡、或者自定义HttpSessionStrategy策略并进行跨域处理</li>
+</ul>
+<h2 id="三-Spring-session在项目中的实践"><a href="#三-Spring-session在项目中的实践" class="headerlink" title="三. Spring-session在项目中的实践"></a>三. Spring-session在项目中的实践</h2><h3 id="1-引入POM依赖"><a href="#1-引入POM依赖" class="headerlink" title="1.引入POM依赖"></a>1.引入POM依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">!—注意Spring</span> <span class="attr">Boot</span>版本 <span class="attr">--</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.session<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-session-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-添加application配置项"><a href="#2-添加application配置项" class="headerlink" title="2.添加application配置项"></a>2.添加application配置项</h3><p>配置文件application.properties</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">########## springSession相关配置 ##########</span></span><br><span class="line"><span class="comment">#session过期时间(秒)</span></span><br><span class="line"><span class="string">spring.session.store-type=redis</span></span><br><span class="line"><span class="comment"># session最大超时时间(分钟)，默认为30</span></span><br><span class="line"><span class="string">【如果新建了RedisSessionConfig类，该项配置失效，需在配置类上以注解形式配置过期时间】</span></span><br><span class="line"><span class="string">server.session.timeout=60</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-添加配置类"><a href="#3-添加配置类" class="headerlink" title="3.添加配置类"></a>3.添加配置类</h3><ul>
+<li>基本配置，配置类开启Redis Http Session</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@EnableRedisHttpSession  //开启redisHttpSession</span><br><span class="line">public class HttpSessionConfig &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>进阶配置：</p>
+</li>
+<li><p>由于快融前端项目存在跨域情况，默认的方式sessionId获取为null，导致每次生成全新的session对象，需配置 自定义的 CookieSerializer 来指定配置信息：</p>
+</li>
+<li><p>MyDefaultSessionCookieConfig：自定义CookieSerializer 所有配置项</p>
+</li>
+<li><p>HttpSessionConfig：自定义sessionId获取策略(快融项目中基于cookie策略)</p>
+</li>
+</ul>
+<h3 id="4-设置过滤器"><a href="#4-设置过滤器" class="headerlink" title="4. 设置过滤器"></a>4. 设置过滤器</h3><p>主要用于兼容快融项目当前的redis管理用户信息方式，保持portalkey管理的用信息的生命周期，与session同步【具体参见ApiOriginFilter类】</p>
+<h3 id="4-前端处理"><a href="#4-前端处理" class="headerlink" title="4. 前端处理"></a>4. 前端处理</h3><p>前端处理主要分为两部分 (对封装的公共ajaxRequest进行修改)：</p>
+<ul>
+<li>ajax跨域允许携带cookie：withCredentials属性</li>
+<li>ajax中ession过期的后处理：dataFilter方法</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">	xhrFields:&#123;<span class="attr">withCredentials</span>:<span class="literal">true</span>&#125;, <span class="comment">//当前请求为跨域类型时是否在请求中协带cookie</span></span><br><span class="line">	url: defaults.url,</span><br><span class="line">	type: defaults.type,</span><br><span class="line">	data: defaults.data,</span><br><span class="line">	<span class="keyword">async</span>: defaults.async,</span><br><span class="line">	cache: defaults.cache,</span><br><span class="line">	dataType: defaults.dataType,</span><br><span class="line">	contentType: defaults.contentType,</span><br><span class="line">	beforeSend: <span class="function"><span class="keyword">function</span> (<span class="params">XHR</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(defaults.isHaveHeader)&#123;</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"userId"</span>, userId);</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"token"</span>, token);</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"tenantId"</span>, tenantId);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	error: <span class="function"><span class="keyword">function</span> (<span class="params">XMLHttpRequest, textStatus, errorThrown</span>) </span>&#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">"错误信息"</span> + errorThrown.toString());</span><br><span class="line">	&#125;,</span><br><span class="line">	dataFilter: <span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123; <span class="comment">//监听session过期，清除用户信息，返回登录页</span></span><br><span class="line">		<span class="keyword">if</span>((data.status == <span class="literal">false</span> || data.status == <span class="string">"false"</span>) &amp;&amp; data.msg == <span class="string">"会话过期"</span>)&#123;</span><br><span class="line">			portal.util.alertBox(<span class="string">"会话过期"</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">return</span> data;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	success: defaults.success</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="四-FAQ"><a href="#四-FAQ" class="headerlink" title="四. FAQ"></a>四. FAQ</h2><h3 id="1-快融-2-0-3版本-当前基于redis的方式存在什么弊端："><a href="#1-快融-2-0-3版本-当前基于redis的方式存在什么弊端：" class="headerlink" title="1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端："></a>1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端：</h3><ul>
+<li>必须自定义代码实现相关redis操作，对业务代码具有侵入性</li>
+<li>所有接口调用时，需另外手动调用一次更新redis的接口，增加前端代码负荷</li>
+<li>前端必须利用localstorage缓存记住redis的key，由于localstorage的生命周期及作用域问题，导致浏览器关闭再打开用户登录状态仍然保持的问题</li>
+</ul>
+<h3 id="2-Spring-session在redis中为什么存在三个key："><a href="#2-Spring-session在redis中为什么存在三个key：" class="headerlink" title="2. Spring-session在redis中为什么存在三个key："></a>2. Spring-session在redis中为什么存在三个key：</h3><ul>
+<li>Sessions：记录 session 本身的数据</li>
+<li>Expires：标记 session 的准确过期时间</li>
+<li>expiration ：利用set集合存储一分钟内会过期的Sessions的key, 保证 session 能够被及时删除，spring 监听事件能够被及时处理<br><img src="/images/springSessionRedis.png" alt=""></li>
+</ul>
+<h3 id="3-为什么利用server-session-timeout配置session过期时间无效"><a href="#3-为什么利用server-session-timeout配置session过期时间无效" class="headerlink" title="3. 为什么利用server.session.timeout配置session过期时间无效"></a>3. 为什么利用server.session.timeout配置session过期时间无效</h3><p>当使用了自定义的RedisSessionConfig类时，session过期时间将以该类注解上的配置为准。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 自定义session过期时间(单位s)</span></span><br><span class="line"><span class="meta">@EnableRedisHttpSession</span>(redisNamespace=<span class="string">"spring:gateway:session:NewsEditing-cas"</span>, maxInstanceIntervalSeconds = <span class="number">60</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpSessionConfig</span> <span class="keyword">implements</span> <span class="title">ApplicationContextWare</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-Session何时进行更新"><a href="#4-Session何时进行更新" class="headerlink" title="4. Session何时进行更新"></a>4. Session何时进行更新</h3><p>Session 的更新由    SessionRepositoryFilter过滤器完成，每次请求均会自动更新session过期时间</p>
 
       
     </div>
@@ -532,7 +614,13 @@
       
         <div class="post-tags">
           
-            <a href="/tags/git/" rel="tag"># git</a>
+            <a href="/tags/SpringSession/" rel="tag"># SpringSession</a>
+          
+            <a href="/tags/session/" rel="tag"># session</a>
+          
+            <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+          
+            <a href="/tags/%E8%B7%A8%E5%9F%9F/" rel="tag"># 跨域</a>
           
         </div>
       
@@ -545,8 +633,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/" rel="next" title="利用SpringSession实现分布式系统的跨域共享session">
-                <i class="fa fa-chevron-left"></i> 利用SpringSession实现分布式系统的跨域共享session
+              <a href="/2019/10/24/Maven/" rel="next" title="Maven">
+                <i class="fa fa-chevron-left"></i> Maven
               </a>
             
           </div>
@@ -554,6 +642,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/" rel="prev" title="Git工作流">
+                Git工作流 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -708,7 +800,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一-分支管理"><span class="nav-number">1.</span> <span class="nav-text">一.分支管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-master分支"><span class="nav-number">1.1.</span> <span class="nav-text">1. master分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-dev分支"><span class="nav-number">1.2.</span> <span class="nav-text">2. dev分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-hotfix-问题名称-bug编号-分支"><span class="nav-number">1.3.</span> <span class="nav-text">3. hotfix-[问题名称][bug编号]分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-feature-功能名称-分支"><span class="nav-number">1.4.</span> <span class="nav-text">4. feature-[功能名称]分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-bugfix-bug编号-分支"><span class="nav-number">1.5.</span> <span class="nav-text">5. bugfix-[bug编号]分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-refactor-重构名称-分支"><span class="nav-number">1.6.</span> <span class="nav-text">6. refactor-[重构名称]分支</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二-Commit提交规范"><span class="nav-number">2.</span> <span class="nav-text">二. Commit提交规范</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-备注格式"><span class="nav-number">2.1.</span> <span class="nav-text">1. 备注格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-提交频率"><span class="nav-number">2.2.</span> <span class="nav-text">2. 提交频率</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-number">1.</span> <span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-Spring-session简介"><span class="nav-number">2.</span> <span class="nav-text">二. Spring-session简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-简介"><span class="nav-number">2.1.</span> <span class="nav-text">1. 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-模块"><span class="nav-number">2.2.</span> <span class="nav-text">2. 模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-关键接口-类"><span class="nav-number">2.3.</span> <span class="nav-text">3. 关键接口/类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-生命周期"><span class="nav-number">2.4.</span> <span class="nav-text">4. 生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-创建session"><span class="nav-number">2.4.1.</span> <span class="nav-text">4.1 创建session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-获取session"><span class="nav-number">2.4.2.</span> <span class="nav-text">4.2 获取session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-删除session"><span class="nav-number">2.4.3.</span> <span class="nav-text">4.3 删除session</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Spring-session在-redis中的数据结构"><span class="nav-number">2.5.</span> <span class="nav-text">5. Spring-session在 redis中的数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-注意事项"><span class="nav-number">2.6.</span> <span class="nav-text">6.注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Spring-session在项目中的实践"><span class="nav-number">3.</span> <span class="nav-text">三. Spring-session在项目中的实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-引入POM依赖"><span class="nav-number">3.1.</span> <span class="nav-text">1.引入POM依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-添加application配置项"><span class="nav-number">3.2.</span> <span class="nav-text">2.添加application配置项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-添加配置类"><span class="nav-number">3.3.</span> <span class="nav-text">3.添加配置类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-设置过滤器"><span class="nav-number">3.4.</span> <span class="nav-text">4. 设置过滤器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-前端处理"><span class="nav-number">3.5.</span> <span class="nav-text">4. 前端处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-FAQ"><span class="nav-number">4.</span> <span class="nav-text">四. FAQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-快融-2-0-3版本-当前基于redis的方式存在什么弊端："><span class="nav-number">4.1.</span> <span class="nav-text">1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Spring-session在redis中为什么存在三个key："><span class="nav-number">4.2.</span> <span class="nav-text">2. Spring-session在redis中为什么存在三个key：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-为什么利用server-session-timeout配置session过期时间无效"><span class="nav-number">4.3.</span> <span class="nav-text">3. 为什么利用server.session.timeout配置session过期时间无效</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Session何时进行更新"><span class="nav-number">4.4.</span> <span class="nav-text">4. Session何时进行更新</span></a></li></ol></li></ol></div>
             
 
           </div>
