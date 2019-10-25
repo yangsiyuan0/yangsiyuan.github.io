@@ -87,11 +87,11 @@
 <meta property="og:site_name" content="小土狗的博客">
 <meta property="og:description" content="一. 前言Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等 二. 技术栈简介1. PrometheusPrometheus可以与Grafan">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;Prometheus.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;Prometheus%E7%95%8C%E9%9D%A2.png">
 <meta property="og:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;actuator%E4%BF%A1%E6%81%AF.png">
-<meta property="og:updated_time" content="2019-10-25T11:33:29.541Z">
+<meta property="og:updated_time" content="2019-10-25T11:36:15.284Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;Prometheus.png">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;images&#x2F;Prometheus%E7%95%8C%E9%9D%A2.png">
 
 
 
@@ -429,7 +429,7 @@
 
       
         <h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。<br>Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等</p>
-<h2 id="二-技术栈简介"><a href="#二-技术栈简介" class="headerlink" title="二. 技术栈简介"></a>二. 技术栈简介</h2><h3 id="1-Prometheus"><a href="#1-Prometheus" class="headerlink" title="1. Prometheus"></a>1. Prometheus</h3><p>Prometheus可以与Grafana监控展现系统无缝集成，可以灵活满足多种自定义的监控需求，提供灵活可配且强大的可视化界面。<br><img src="/images/Prometheus.png" alt=""></p>
+<h2 id="二-技术栈简介"><a href="#二-技术栈简介" class="headerlink" title="二. 技术栈简介"></a>二. 技术栈简介</h2><h3 id="1-Prometheus"><a href="#1-Prometheus" class="headerlink" title="1. Prometheus"></a>1. Prometheus</h3><p>Prometheus可以与Grafana监控展现系统无缝集成，可以灵活满足多种自定义的监控需求，提供灵活可配且强大的可视化界面。<br><img src="/images/Prometheus%E7%95%8C%E9%9D%A2.png" alt=""></p>
 <h3 id="2-Actuator"><a href="#2-Actuator" class="headerlink" title="2. Actuator"></a>2. Actuator</h3><p>Actuator作为springboot的Starter POMs中提供的一个特殊依赖模块，极易在springBoot项目中集成，自动为应用构建了一系列用于监控的端点，同时在其他springCloud组件时会对其进行自动扩展(比如在Eurake为/health端点扩展了指标)，因此推荐在SpringBoot项目中引入，其相关监控信息以json数据呈现。<br><img src="/images/actuator%E4%BF%A1%E6%81%AF.png" alt=""></p>
 <h2 id="三-在项目中的实践"><a href="#三-在项目中的实践" class="headerlink" title="三. 在项目中的实践"></a>三. 在项目中的实践</h2><h3 id="1-springBoot项目集成Prometheus"><a href="#1-springBoot项目集成Prometheus" class="headerlink" title="1. springBoot项目集成Prometheus"></a>1. springBoot项目集成Prometheus</h3><h4 id="1-引入maven依赖"><a href="#1-引入maven依赖" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康监控 Prometheus --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_servlet<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_spring_boot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_hotspot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
@@ -566,8 +566,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/10/24/Maven/" rel="next" title="Maven">
-                <i class="fa fa-chevron-left"></i> Maven
+              <a href="/2019/10/24/Spring%20Data%E5%AE%9E%E6%88%98/" rel="next" title="Spring Data">
+                <i class="fa fa-chevron-left"></i> Spring Data
               </a>
             
           </div>
