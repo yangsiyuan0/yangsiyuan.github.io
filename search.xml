@@ -3,7 +3,7 @@
   <entry>
     <title>分布式定时任务调度框架选型</title>
     <url>/2019/10/28/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E6%A1%86%E6%9E%B6%E9%80%89%E5%9E%8B/</url>
-    <content><![CDATA[<h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>目前，绩效考核项目中采集、计算、传播分析功能中均使用到了定时任务，具体而言有如下刚性诉求：</p>
+    <content><![CDATA[<h1 id="分布式定时任务调度框架选型"><a href="#分布式定时任务调度框架选型" class="headerlink" title="分布式定时任务调度框架选型"></a>分布式定时任务调度框架选型</h1><h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>目前，绩效考核项目中采集、计算、传播分析功能中均使用到了定时任务，具体而言有如下刚性诉求：</p>
 <ul>
 <li>支持动态配置</li>
 <li>支持分布式、集群部署，且满足一致性</li>
@@ -38,7 +38,96 @@
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 需要在启动类中加入@EnableScheduling注解，启用定时任务的配置</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableScheduling</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;            </span><br><span class="line">        SpringApplication.run(Application.class, args);  </span><br><span class="line">&#125;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定时任务实现类</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ScheduledTasks</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> SimpleDateFormat dateFormat = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"HH:mm:ss"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 上一次开始执行时间点之后5秒再执行: @Scheduled(fixedRate = 5000)</span></span><br><span class="line">    <span class="comment">// 上一次执行完毕时间点之后5秒再执行: @Scheduled(fixedDelay = 5000)</span></span><br><span class="line">    <span class="comment">// 第一次延迟1秒后执行，之后按fixedRate的规则每5秒执行一次 @Scheduled(fixedRate = 5000)</span></span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Scheduled</span>(cron=<span class="string">"*/5 * * * * *"</span>) <span class="comment">// cron表达式</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reportCurrentTime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        log.info(<span class="string">"The time is now &#123;&#125;"</span>, dateFormat.format(<span class="keyword">new</span> Date()));</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="4-Quartz"><a href="#4-Quartz" class="headerlink" title="4. Quartz"></a>4. Quartz</h3><p><code>Quartz</code>是Java事实上的定时任务标准。但Quartz关注点在于定时任务而非数据，并无一套根据数据处理而定制化的流程。虽然Quartz可以基于数据库实现作业的高可用，但缺少分布式并行调度的功能</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Quartz任务类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QuartzJob</span> <span class="keyword">implements</span> <span class="title">org</span>.<span class="title">quartz</span>.<span class="title">Job</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">QuartzJob</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(JobExecutionContext arg0)</span> <span class="keyword">throws</span> JobExecutionException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test: "</span> + Calendar.getInstance().getTime());</span><br><span class="line">&#125;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Scheduler实现任务调度</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Job_Schedule_Test4</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> SchedulerException </span>&#123;</span><br><span class="line">        <span class="comment">// Grab the Scheduler instance from the Factory</span></span><br><span class="line">        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();</span><br><span class="line">        <span class="comment">// define the job and tie it to our MyJob class</span></span><br><span class="line">        JobDetail job = <span class="keyword">new</span> Job(QuartzJob.class)</span><br><span class="line">        .withIdentity(<span class="string">"job1"</span>, <span class="string">"group1"</span>)</span><br><span class="line">        .build();</span><br><span class="line">        <span class="comment">// Trigger the job to run now, and then repeat every 40 seconds</span></span><br><span class="line">        Trigger trigger = <span class="keyword">new</span> Trigger()</span><br><span class="line">                                .withIdentity(<span class="string">"trigger1"</span>, <span class="string">"group1"</span>)</span><br><span class="line">                                .startNow()</span><br><span class="line">                                .withSchedule(simpleSchedule()</span><br><span class="line">                                .withIntervalInSeconds(<span class="number">1</span>)</span><br><span class="line">                                .repeatForever())</span><br><span class="line">                                .build();</span><br><span class="line">        <span class="comment">// Tell quartz to schedule the job using our trigger</span></span><br><span class="line">        scheduler.scheduleJob(job, trigger);</span><br><span class="line">        <span class="comment">// and start it off</span></span><br><span class="line">        scheduler.start();</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>]]></content>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Quartz任务类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QuartzJob</span> <span class="keyword">implements</span> <span class="title">org</span>.<span class="title">quartz</span>.<span class="title">Job</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">QuartzJob</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(JobExecutionContext arg0)</span> <span class="keyword">throws</span> JobExecutionException </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test: "</span> + Calendar.getInstance().getTime());</span><br><span class="line">&#125;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Scheduler实现任务调度</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Job_Schedule_Test4</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> SchedulerException </span>&#123;</span><br><span class="line">        <span class="comment">// Grab the Scheduler instance from the Factory</span></span><br><span class="line">        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();</span><br><span class="line">        <span class="comment">// define the job and tie it to our MyJob class</span></span><br><span class="line">        JobDetail job = <span class="keyword">new</span> Job(QuartzJob.class)</span><br><span class="line">        .withIdentity(<span class="string">"job1"</span>, <span class="string">"group1"</span>)</span><br><span class="line">        .build();</span><br><span class="line">        <span class="comment">// Trigger the job to run now, and then repeat every 40 seconds</span></span><br><span class="line">        Trigger trigger = <span class="keyword">new</span> Trigger()</span><br><span class="line">                                .withIdentity(<span class="string">"trigger1"</span>, <span class="string">"group1"</span>)</span><br><span class="line">                                .startNow()</span><br><span class="line">                                .withSchedule(simpleSchedule()</span><br><span class="line">                                .withIntervalInSeconds(<span class="number">1</span>)</span><br><span class="line">                                .repeatForever())</span><br><span class="line">                                .build();</span><br><span class="line">        <span class="comment">// Tell quartz to schedule the job using our trigger</span></span><br><span class="line">        scheduler.scheduleJob(job, trigger);</span><br><span class="line">        <span class="comment">// and start it off</span></span><br><span class="line">        scheduler.start();</span><br><span class="line">&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-分布式-Java定时任务框架列举"><a href="#三-分布式-Java定时任务框架列举" class="headerlink" title="三. 分布式-Java定时任务框架列举"></a>三. 分布式-Java定时任务框架列举</h2><h3 id="1-elastic-job"><a href="#1-elastic-job" class="headerlink" title="1. elastic-job"></a>1. elastic-job</h3><p>elastic-job是当当开发的弹性分布式任务调度系统，采用zookeeper实现分布式协调，实现任务高可用以及分片。去中心化的设计，各个作业节点自治，各自触发调度，存在各个作业服务器时间不一致的问题</p>
+<p><u><strong>该项目已经超过两年未进行更新了，不建议使用</strong></u></p>
+<h4 id="1-概述"><a href="#1-概述" class="headerlink" title="1). 概述"></a>1). 概述</h4><p>elastic-Job是一个分布式调度解决方案，由两个相互独立的子项目Elastic-Job-Lite和Elastic-Job-Cloud组成。</p>
+<ul>
+<li><strong>elastic-Job-Cloud</strong>使用Mesos + Docker的解决方案，额外提供资源治理、应用分发以及进程隔离等服务。</li>
+<li><strong>elastic-Job-Lite</strong>定位为轻量级无中心化解决方案，使用jar包的形式提供最轻量级的分布式任务的协调服务，外部依赖仅Zookeeper<blockquote>
+<p><code>推荐搭配：Elastic-Job-Lite+Zookeeper在高可用方案的基础上增加了弹性扩容和数据分片</code></p>
+</blockquote>
+</li>
+</ul>
+<p><strong>Elastic-Job提供了如下功能模块：</strong></p>
+<ul>
+<li>分布式调度协调</li>
+<li>弹性扩容缩容</li>
+<li>失效转移</li>
+<li>错过执行作业重触发</li>
+<li>作业分片一致性，保证同一分片在分布式环境中仅一个执行实例</li>
+<li>自诊断并修复分布式不稳定造成的问题</li>
+<li>支持并行调度</li>
+<li>支持作业生命周期操作</li>
+<li>丰富的作业类型</li>
+<li>Spring整合以及命名空间提供</li>
+<li>运维平台</li>
+</ul>
+<h4 id="2-核心概念"><a href="#2-核心概念" class="headerlink" title="2). 核心概念"></a>2). 核心概念</h4><ul>
+<li><p><strong>分片概念</strong><br>任务的分布式执行，需要将一个任务拆分为多个独立的任务项，然后由分布式的服务器分别执行某一个或几个分片项</p>
+<blockquote>
+<p>例如：有一个遍历数据库某张表的作业，现有2台服务器。为了快速的执行作业，那么每台服务器应执行作业的50%。<br>为满足此需求，可将作业分成2片，每台服务器执行1片。作业遍历数据的逻辑应为：服务器A遍历ID以奇数结尾的数据；服务器B遍历ID以偶数结尾的数据。<br>如果分成10片，则作业遍历数据的逻辑应为：每片分到的分片项应为ID%10，而服务器A被分配到分片项0,1,2,3,4；服务器B被分配到分片项5,6,7,8,9，直接的结果就是服务器A遍历ID以0-4结尾的数据；服务器B遍历ID以5-9结尾的数据</p>
+</blockquote>
+</li>
+<li><p><strong>分片项与业务处理解耦</strong><br>Elastic-Job并不直接提供数据处理的功能，框架只会将分片项分配至各个运行中的作业服务器，开发者需要自行处理分片项与真实数据的对应关系</p>
+</li>
+<li><p><strong>分布式调度</strong><br>Elastic-Job并无作业调度中心节点，而是基于部署作业框架的程序在到达相应时间点时各自触发调度</p>
+</li>
+<li><p><strong>最大限度利用资源</strong><br>Elastic-Job也提供最灵活的方式，最大限度的提高执行作业的吞吐量。将分片项设置为大于服务器的数量，最好是大于服务器倍数的数量，作业将会合理的利用分布式资源，动态的分配分片项</p>
+<blockquote>
+<p>例如：3台服务器，分成10片，则分片项分配结果为服务器A=0,1,2;服务器B=3,4,5;服务器C=6,7,8,9。如果服务器C崩溃，则分片项分配结果为服务器A=0,1,2,3,4;服务器B=5,6,7,8,9。在不丢失分片项的情况下，最大限度的利用现有资源提高吞吐量</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="2-xxl-job"><a href="#2-xxl-job" class="headerlink" title="2. xxl-job"></a>2. xxl-job</h3><p>大众点评员工徐雪里于2015年发布的分布式任务调度平台，是一个轻量级分布式任务调度框架，其核心设计目标是开发迅速、学习简单、轻量级、易扩展。具有如下特点：</p>
+<blockquote>
+<ul>
+<li><strong>简单</strong>：支持通过Web页面对任务进行CRUD操作，操作简单；</li>
+<li><strong>动态</strong>：支持动态修改任务状态、启动/停止任务，以及终止运行中任务，即时生效；</li>
+<li><strong>调度中心HA（中心式）</strong>：调度采用中心式设计，“调度中心”自研调度组件并支持集群部署，可保证调度中心HA；</li>
+<li><strong>执行器HA（分布式）</strong>：任务分布式执行，任务”执行器”支持集群部署，可保证任务执行HA；</li>
+<li><strong>注册中心</strong>: 执行器会周期性自动注册任务, 调度中心将会自动发现注册的任务并触发执行。同时，也支持手动录入执行器地址；</li>
+<li><strong>弹性扩容缩容</strong>：一旦有新执行器机器上线或者下线，下次调度时将会重新分配任务；</li>
+<li><strong>路由策略</strong>：执行器集群部署时提供丰富的路由策略，包括：第一个、最后一个、轮询、随机、一致性HASH、最不经常使用、最近最久未使用、故障转移、忙碌转移等；</li>
+<li><strong>故障转移</strong>：任务路由策略选择”故障转移”情况下，如果执行器集群中某一台机器故障，将会自动Failover切换到一台正常的执行器发送调度请求。</li>
+<li><strong>阻塞处理策略</strong>：调度过于密集执行器来不及处理时的处理策略，策略包括：单机串行（默认）、丢弃后续调度、覆盖之前调度；</li>
+<li><strong>事件触发</strong>：除了”Cron方式”和”任务依赖方式”触发任务执行之外，支持基于事件的触发任务方式。调度中心提供触发任务单次执行的API服务，可根据业务事件灵活触发。</li>
+<li><strong>任务进度监控</strong>：支持实时监控任务进度；</li>
+<li><strong>Rolling实时日志</strong>：支持在线查看调度结果，并且支持以Rolling方式实时查看执行器输出的完整的执行日志</li>
+</ul>
+</blockquote>
+<h2 id="四-项目实战"><a href="#四-项目实战" class="headerlink" title="四. 项目实战"></a>四. 项目实战</h2><h3 id="1-elastic-job篇"><a href="#1-elastic-job篇" class="headerlink" title="1. elastic-job篇"></a>1. elastic-job篇</h3><h4 id="1-引入maven依赖"><a href="#1-引入maven依赖" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- elasticjob相关依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.dangdang<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>elastic-job-lite-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- elastic-job-lite-spring --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.dangdang<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>elastic-job-lite-spring<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-配置zookeeper注册中心"><a href="#2-配置zookeeper注册中心" class="headerlink" title="2). 配置zookeeper注册中心"></a>2). 配置zookeeper注册中心</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ElasticJobConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Resource</span>(name = <span class="string">"druidDataSource"</span>)</span><br><span class="line">    DataSource dataSource;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ZookeeperProperties zookeeperProperties;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ZookeeperConfiguration <span class="title">zkConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ZookeeperConfiguration(zookeeperProperties.getServer(), zookeeperProperties.getNamespace());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span>(initMethod = <span class="string">"init"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ZookeeperRegistryCenterregCenter</span><span class="params">(ZookeeperConfiguration config)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ZookeeperRegistryCenter(config);</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> JobEventConfiguration <span class="title">jobEventConfiguration</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> JobEventRdbConfiguration(dataSource);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ElasticJobListener <span class="title">elasticJobListener</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> MyElasticJobListener(<span class="number">100</span>, <span class="number">100</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-添加任务节点到zookeeper"><a href="#3-添加任务节点到zookeeper" class="headerlink" title="3). 添加任务节点到zookeeper"></a>3). 添加任务节点到zookeeper</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="4-初始化任务"><a href="#4-初始化任务" class="headerlink" title="4). 初始化任务"></a>4). 初始化任务</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-实际执行作业"><a href="#5-实际执行作业" class="headerlink" title="5). 实际执行作业"></a>5). 实际执行作业</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="6-分片具体应用"><a href="#6-分片具体应用" class="headerlink" title="6). 分片具体应用"></a>6). 分片具体应用</h4><p>调用外部的分页查询接口(HTTP)时，对分页参数取模最大分片数，让每一次请求的分页参数都均匀落在不同的分片项上</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="7-elastic-job可视化监控"><a href="#7-elastic-job可视化监控" class="headerlink" title="7). elastic-job可视化监控"></a>7). elastic-job可视化监控</h4><p>elastic-job默认未提供可视化监控功能，可以利用第三方的工具实现，步骤如下：</p>
+<blockquote>
+<ol>
+<li>在<a href="https://github.com/miguangying/elastic-job-lite-console下载zip包,解压并执行bin\start.sh（linux）,bin\start.bat（windows）" target="_blank" rel="noopener">https://github.com/miguangying/elastic-job-lite-console下载zip包,解压并执行bin\start.sh（linux）,bin\start.bat（windows）</a></li>
+<li>通过<a href="http://ip:8899/可访问,默认端口号8899，可在start.bat,start.sh中修改" target="_blank" rel="noopener">http://ip:8899/可访问,默认端口号8899，可在start.bat,start.sh中修改</a></li>
+<li>初始管理员账号root  密码root  可通过conf\auth.properties修改用户名及密码</li>
+</ol>
+</blockquote>
+<p><strong>登录完展示以下首页:</strong><br><img src="en-resource://database/5895:0" alt="73e9767246c7261b503d4fd870d3b060.png"></p>
+<p><strong>该工具支持以下功能：</strong></p>
+<blockquote>
+<ul>
+<li>查看作业以及服务器状态</li>
+<li>快捷的修改以及删除作业设置</li>
+<li>启用和禁用作业</li>
+<li>跨注册中心查看作业</li>
+<li>查看作业运行轨迹和运行状态</li>
+</ul>
+</blockquote>
+<h3 id="2-xxl-job篇"><a href="#2-xxl-job篇" class="headerlink" title="2. xxl-job篇"></a>2. xxl-job篇</h3>]]></content>
       <categories>
         <category>java基础</category>
       </categories>
@@ -104,76 +193,6 @@
         <tag>SpringCloud</tag>
         <tag>gateway</tag>
         <tag>网关</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Git工作流</title>
-    <url>/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/</url>
-    <content><![CDATA[<h1 id="一-分支管理"><a href="#一-分支管理" class="headerlink" title="一.分支管理"></a>一.分支管理</h1><p>开发过程中主要存在以下分支：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- master</span><br><span class="line">- dev</span><br><span class="line">- hotfix-[问题名称][bug编号]</span><br><span class="line">- feature-[功能名称]</span><br><span class="line">- bugfix-[bug编号]</span><br><span class="line">- refactor-[重构名称]</span><br></pre></td></tr></table></figure>
-<h2 id="1-master分支"><a href="#1-master分支" class="headerlink" title="1. master分支"></a>1. master分支</h2><ul>
-<li>稳定的可发布版本</li>
-<li>由发布人负责管理(合并操作)</li>
-<li>不允许提交代码、不允许开发</li>
-</ul>
-<h2 id="2-dev分支"><a href="#2-dev分支" class="headerlink" title="2. dev分支"></a>2. dev分支</h2><ul>
-<li>不稳定分支，功能完整，允许bug</li>
-<li>原则上不允许直接在dev分支上进行功能开发，必须新建feature分支进行开发</li>
-</ul>
-<h2 id="3-hotfix-问题名称-bug编号-分支"><a href="#3-hotfix-问题名称-bug编号-分支" class="headerlink" title="3. hotfix-[问题名称][bug编号]分支"></a>3. hotfix-[问题名称][bug编号]分支</h2><ul>
-<li>从master分支创建，横线后面跟上问题名称或者对应的bug编号，仅仅适用于<strong>生产线问题紧急修复</strong>！！！</li>
-<li>修复完成，测试通过，合并到master和dev分支上，然后将此分支删除</li>
-</ul>
-<h2 id="4-feature-功能名称-分支"><a href="#4-feature-功能名称-分支" class="headerlink" title="4. feature-[功能名称]分支"></a>4. feature-[功能名称]分支</h2><ul>
-<li>从dev分支创建，横线后跟功能名称，用于新功能开发，每天下班前push提交到远程</li>
-<li>开发完成以后，在远程发起向dev分支的合并请求，由指定的CodeReview人员审查通过以后进行合并，并删除该分支</li>
-</ul>
-<h2 id="5-bugfix-bug编号-分支"><a href="#5-bugfix-bug编号-分支" class="headerlink" title="5. bugfix-[bug编号]分支"></a>5. bugfix-[bug编号]分支</h2><ul>
-<li>从dev分支创建，用于修改测试提出的bug，横线后跟bug编号</li>
-<li>修复以后，在远程发起向dev分支的合并请求，并指定提交者自身（或其他人）作为CodeReview，合并以后删除该分支</li>
-</ul>
-<h2 id="6-refactor-重构名称-分支"><a href="#6-refactor-重构名称-分支" class="headerlink" title="6. refactor-[重构名称]分支"></a>6. refactor-[重构名称]分支</h2><ul>
-<li>从dev分支创建，用于代码的<strong>重大规模重构</strong>（小规模重构创建feature分支即可）</li>
-<li>重构以后，必须经过严格测试通过，才能向dev分支合并</li>
-</ul>
-<h1 id="二-Commit提交规范"><a href="#二-Commit提交规范" class="headerlink" title="二. Commit提交规范"></a>二. Commit提交规范</h1><h2 id="1-备注格式"><a href="#1-备注格式" class="headerlink" title="1. 备注格式"></a>1. 备注格式</h2><p>[类型描述]，类型如下图所示</p>
-<table>
-<thead>
-<tr>
-<th align="left">类型</th>
-<th align="left">描述</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">feat</td>
-<td align="left">feature,即新开发的功能</td>
-</tr>
-<tr>
-<td align="left">fix</td>
-<td align="left">问题修复</td>
-</tr>
-<tr>
-<td align="left">refactor</td>
-<td align="left">重构代码</td>
-</tr>
-<tr>
-<td align="left">doc</td>
-<td align="left">增加文档(如ReadMe)、注释</td>
-</tr>
-</tbody></table>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">fix:修复身份证含字母X的用户无法注册问题 </span><br><span class="line">fix: 紧急修复生产线用户积分不显示的问题 </span><br><span class="line">feat:商品详情页功能 </span><br><span class="line">doc:增加项目readme文档，修改结算条款结算逻辑的注释</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="2-提交频率"><a href="#2-提交频率" class="headerlink" title="2. 提交频率"></a>2. 提交频率</h2><ol>
-<li>每天下班前必须提交feature分支，并push到远程</li>
-<li>hotfix、feature、bugfix、refactor分支尽量按照功能点或修复重构的问题及时commit（不要求push）<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/git%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt=""></li>
-</ol>
-]]></content>
-      <categories>
-        <category>git</category>
-      </categories>
-      <tags>
-        <tag>git</tag>
       </tags>
   </entry>
   <entry>
@@ -262,6 +281,76 @@
         <tag>prometheus</tag>
         <tag>actuator</tag>
         <tag>SpringBoot</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git工作流</title>
+    <url>/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/</url>
+    <content><![CDATA[<h1 id="一-分支管理"><a href="#一-分支管理" class="headerlink" title="一.分支管理"></a>一.分支管理</h1><p>开发过程中主要存在以下分支：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- master</span><br><span class="line">- dev</span><br><span class="line">- hotfix-[问题名称][bug编号]</span><br><span class="line">- feature-[功能名称]</span><br><span class="line">- bugfix-[bug编号]</span><br><span class="line">- refactor-[重构名称]</span><br></pre></td></tr></table></figure>
+<h2 id="1-master分支"><a href="#1-master分支" class="headerlink" title="1. master分支"></a>1. master分支</h2><ul>
+<li>稳定的可发布版本</li>
+<li>由发布人负责管理(合并操作)</li>
+<li>不允许提交代码、不允许开发</li>
+</ul>
+<h2 id="2-dev分支"><a href="#2-dev分支" class="headerlink" title="2. dev分支"></a>2. dev分支</h2><ul>
+<li>不稳定分支，功能完整，允许bug</li>
+<li>原则上不允许直接在dev分支上进行功能开发，必须新建feature分支进行开发</li>
+</ul>
+<h2 id="3-hotfix-问题名称-bug编号-分支"><a href="#3-hotfix-问题名称-bug编号-分支" class="headerlink" title="3. hotfix-[问题名称][bug编号]分支"></a>3. hotfix-[问题名称][bug编号]分支</h2><ul>
+<li>从master分支创建，横线后面跟上问题名称或者对应的bug编号，仅仅适用于<strong>生产线问题紧急修复</strong>！！！</li>
+<li>修复完成，测试通过，合并到master和dev分支上，然后将此分支删除</li>
+</ul>
+<h2 id="4-feature-功能名称-分支"><a href="#4-feature-功能名称-分支" class="headerlink" title="4. feature-[功能名称]分支"></a>4. feature-[功能名称]分支</h2><ul>
+<li>从dev分支创建，横线后跟功能名称，用于新功能开发，每天下班前push提交到远程</li>
+<li>开发完成以后，在远程发起向dev分支的合并请求，由指定的CodeReview人员审查通过以后进行合并，并删除该分支</li>
+</ul>
+<h2 id="5-bugfix-bug编号-分支"><a href="#5-bugfix-bug编号-分支" class="headerlink" title="5. bugfix-[bug编号]分支"></a>5. bugfix-[bug编号]分支</h2><ul>
+<li>从dev分支创建，用于修改测试提出的bug，横线后跟bug编号</li>
+<li>修复以后，在远程发起向dev分支的合并请求，并指定提交者自身（或其他人）作为CodeReview，合并以后删除该分支</li>
+</ul>
+<h2 id="6-refactor-重构名称-分支"><a href="#6-refactor-重构名称-分支" class="headerlink" title="6. refactor-[重构名称]分支"></a>6. refactor-[重构名称]分支</h2><ul>
+<li>从dev分支创建，用于代码的<strong>重大规模重构</strong>（小规模重构创建feature分支即可）</li>
+<li>重构以后，必须经过严格测试通过，才能向dev分支合并</li>
+</ul>
+<h1 id="二-Commit提交规范"><a href="#二-Commit提交规范" class="headerlink" title="二. Commit提交规范"></a>二. Commit提交规范</h1><h2 id="1-备注格式"><a href="#1-备注格式" class="headerlink" title="1. 备注格式"></a>1. 备注格式</h2><p>[类型描述]，类型如下图所示</p>
+<table>
+<thead>
+<tr>
+<th align="left">类型</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">feat</td>
+<td align="left">feature,即新开发的功能</td>
+</tr>
+<tr>
+<td align="left">fix</td>
+<td align="left">问题修复</td>
+</tr>
+<tr>
+<td align="left">refactor</td>
+<td align="left">重构代码</td>
+</tr>
+<tr>
+<td align="left">doc</td>
+<td align="left">增加文档(如ReadMe)、注释</td>
+</tr>
+</tbody></table>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">fix:修复身份证含字母X的用户无法注册问题 </span><br><span class="line">fix: 紧急修复生产线用户积分不显示的问题 </span><br><span class="line">feat:商品详情页功能 </span><br><span class="line">doc:增加项目readme文档，修改结算条款结算逻辑的注释</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-提交频率"><a href="#2-提交频率" class="headerlink" title="2. 提交频率"></a>2. 提交频率</h2><ol>
+<li>每天下班前必须提交feature分支，并push到远程</li>
+<li>hotfix、feature、bugfix、refactor分支尽量按照功能点或修复重构的问题及时commit（不要求push）<br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/git%E6%8F%90%E4%BA%A4%E6%B5%81%E7%A8%8B%E5%9B%BE.png" alt=""></li>
+</ol>
+]]></content>
+      <categories>
+        <category>git</category>
+      </categories>
+      <tags>
+        <tag>git</tag>
       </tags>
   </entry>
   <entry>
