@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="SpringSession,session,分布式,跨域," />
+  <meta name="keywords" content="分布式,SpringSession,session,跨域," />
 
 
 
@@ -80,7 +80,7 @@
 
 
 <meta name="description" content="一. 前言在Web项目开发中，会话管理是一个很重要的部分，用于存储与用户相关的数据。通常是由符合session规范的容器来负责存储管理，这也意味着一旦容器关闭、重启，会导致会话失效（在tomcat中，由每个context容器内的Manager对象来管理session）。 目前，流行的分布式架构下，出现了跨服务器无法共享session的问题。对此，通常的解决方案为，利用redis、JDBC等存储介质">
-<meta name="keywords" content="SpringSession,session,分布式,跨域">
+<meta name="keywords" content="分布式,SpringSession,session,跨域">
 <meta property="og:type" content="article">
 <meta property="og:title" content="利用SpringSession实现分布式系统的跨域共享session">
 <meta property="og:url" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;2019&#x2F;10&#x2F;24&#x2F;%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession&#x2F;index.html">
@@ -614,11 +614,11 @@
       
         <div class="post-tags">
           
+            <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+          
             <a href="/tags/SpringSession/" rel="tag"># SpringSession</a>
           
             <a href="/tags/session/" rel="tag"># session</a>
-          
-            <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
           
             <a href="/tags/%E8%B7%A8%E5%9F%9F/" rel="tag"># 跨域</a>
           
@@ -633,8 +633,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/10/23/%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E4%B8%8E%E5%8F%91%E7%8E%B0/" rel="next" title="服务注册与发现">
-                <i class="fa fa-chevron-left"></i> 服务注册与发现
+              <a href="/2019/10/24/Maven/" rel="next" title="Maven">
+                <i class="fa fa-chevron-left"></i> Maven
               </a>
             
           </div>
@@ -643,8 +643,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/10/24/Maven/" rel="prev" title="Maven">
-                Maven <i class="fa fa-chevron-right"></i>
+              <a href="/2019/10/24/Git%E5%B7%A5%E4%BD%9C%E6%B5%81/" rel="prev" title="Git工作流">
+                Git工作流 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -729,7 +729,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -751,7 +751,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">28</span>
+                  <span class="site-state-item-count">32</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -800,7 +800,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-number">1.</span> <span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-Spring-session简介"><span class="nav-number">2.</span> <span class="nav-text">二. Spring-session简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-简介"><span class="nav-number">2.1.</span> <span class="nav-text">1. 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-模块"><span class="nav-number">2.2.</span> <span class="nav-text">2. 模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-关键接口-类"><span class="nav-number">2.3.</span> <span class="nav-text">3. 关键接口/类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-生命周期"><span class="nav-number">2.4.</span> <span class="nav-text">4. 生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-创建session"><span class="nav-number">2.4.1.</span> <span class="nav-text">4.1 创建session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-获取session"><span class="nav-number">2.4.2.</span> <span class="nav-text">4.2 获取session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-删除session"><span class="nav-number">2.4.3.</span> <span class="nav-text">4.3 删除session</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Spring-session在-redis中的数据结构"><span class="nav-number">2.5.</span> <span class="nav-text">5. Spring-session在 redis中的数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-注意事项"><span class="nav-number">2.6.</span> <span class="nav-text">6.注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Spring-session在项目中的实践"><span class="nav-number">3.</span> <span class="nav-text">三. Spring-session在项目中的实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-引入POM依赖"><span class="nav-number">3.1.</span> <span class="nav-text">1.引入POM依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-添加application配置项"><span class="nav-number">3.2.</span> <span class="nav-text">2.添加application配置项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-添加配置类"><span class="nav-number">3.3.</span> <span class="nav-text">3.添加配置类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-设置过滤器"><span class="nav-number">3.4.</span> <span class="nav-text">4. 设置过滤器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-前端处理"><span class="nav-number">3.5.</span> <span class="nav-text">4. 前端处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-FAQ"><span class="nav-number">4.</span> <span class="nav-text">四. FAQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-快融-2-0-3版本-当前基于redis的方式存在什么弊端："><span class="nav-number">4.1.</span> <span class="nav-text">1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Spring-session在redis中为什么存在三个key："><span class="nav-number">4.2.</span> <span class="nav-text">2. Spring-session在redis中为什么存在三个key：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-为什么利用server-session-timeout配置session过期时间无效"><span class="nav-number">4.3.</span> <span class="nav-text">3. 为什么利用server.session.timeout配置session过期时间无效</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Session何时进行更新"><span class="nav-number">4.4.</span> <span class="nav-text">4. Session何时进行更新</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-前言"><span class="nav-text">一. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-Spring-session简介"><span class="nav-text">二. Spring-session简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-简介"><span class="nav-text">1. 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-模块"><span class="nav-text">2. 模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-关键接口-类"><span class="nav-text">3. 关键接口/类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-生命周期"><span class="nav-text">4. 生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-创建session"><span class="nav-text">4.1 创建session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-获取session"><span class="nav-text">4.2 获取session</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-删除session"><span class="nav-text">4.3 删除session</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Spring-session在-redis中的数据结构"><span class="nav-text">5. Spring-session在 redis中的数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-注意事项"><span class="nav-text">6.注意事项</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-Spring-session在项目中的实践"><span class="nav-text">三. Spring-session在项目中的实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-引入POM依赖"><span class="nav-text">1.引入POM依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-添加application配置项"><span class="nav-text">2.添加application配置项</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-添加配置类"><span class="nav-text">3.添加配置类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-设置过滤器"><span class="nav-text">4. 设置过滤器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-前端处理"><span class="nav-text">4. 前端处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-FAQ"><span class="nav-text">四. FAQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-快融-2-0-3版本-当前基于redis的方式存在什么弊端："><span class="nav-text">1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Spring-session在redis中为什么存在三个key："><span class="nav-text">2. Spring-session在redis中为什么存在三个key：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-为什么利用server-session-timeout配置session过期时间无效"><span class="nav-text">3. 为什么利用server.session.timeout配置session过期时间无效</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Session何时进行更新"><span class="nav-text">4. Session何时进行更新</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -834,7 +834,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">27.1k</span>
+    <span title="Site words total count">29.9k</span>
   
 </div>
 
