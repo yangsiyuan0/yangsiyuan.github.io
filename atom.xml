@@ -43,11 +43,11 @@
     
       <category term="SpringCloud" scheme="https://yangsiyuan0.github.io/tags/SpringCloud/"/>
     
+      <category term="分布式" scheme="https://yangsiyuan0.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
+    
       <category term="springCloudConfig" scheme="https://yangsiyuan0.github.io/tags/springCloudConfig/"/>
     
       <category term="配置中心" scheme="https://yangsiyuan0.github.io/tags/%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83/"/>
-    
-      <category term="分布式" scheme="https://yangsiyuan0.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
     
       <category term="Apollo" scheme="https://yangsiyuan0.github.io/tags/Apollo/"/>
     
@@ -88,11 +88,11 @@
   </entry>
   
   <entry>
-    <title>API网关服务-kong</title>
-    <link href="https://yangsiyuan0.github.io/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-kong/"/>
-    <id>https://yangsiyuan0.github.io/2019/10/25/API网关服务-kong/</id>
+    <title>API网关服务-SpringCloud gateway</title>
+    <link href="https://yangsiyuan0.github.io/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-SpringCloud%20Gateway/"/>
+    <id>https://yangsiyuan0.github.io/2019/10/25/API网关服务-SpringCloud Gateway/</id>
     <published>2019-10-25T08:35:27.000Z</published>
-    <updated>2019-10-25T13:10:54.133Z</updated>
+    <updated>2019-10-25T13:10:39.055Z</updated>
     
     <content type="html"><![CDATA[<p>TODO</p>]]></content>
     
@@ -114,7 +114,7 @@
     
       <category term="网关" scheme="https://yangsiyuan0.github.io/tags/%E7%BD%91%E5%85%B3/"/>
     
-      <category term="kong" scheme="https://yangsiyuan0.github.io/tags/kong/"/>
+      <category term="gateway" scheme="https://yangsiyuan0.github.io/tags/gateway/"/>
     
   </entry>
   
@@ -143,20 +143,20 @@
     
       <category term="SpringCloud" scheme="https://yangsiyuan0.github.io/tags/SpringCloud/"/>
     
-      <category term="gateway" scheme="https://yangsiyuan0.github.io/tags/gateway/"/>
-    
       <category term="网关" scheme="https://yangsiyuan0.github.io/tags/%E7%BD%91%E5%85%B3/"/>
+    
+      <category term="gateway" scheme="https://yangsiyuan0.github.io/tags/gateway/"/>
     
       <category term="zuul" scheme="https://yangsiyuan0.github.io/tags/zuul/"/>
     
   </entry>
   
   <entry>
-    <title>API网关服务-SpringCloud gateway</title>
-    <link href="https://yangsiyuan0.github.io/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-SpringCloud%20Gateway/"/>
-    <id>https://yangsiyuan0.github.io/2019/10/25/API网关服务-SpringCloud Gateway/</id>
+    <title>API网关服务-kong</title>
+    <link href="https://yangsiyuan0.github.io/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-kong/"/>
+    <id>https://yangsiyuan0.github.io/2019/10/25/API网关服务-kong/</id>
     <published>2019-10-25T08:35:27.000Z</published>
-    <updated>2019-10-25T13:10:39.055Z</updated>
+    <updated>2019-10-25T13:10:54.133Z</updated>
     
     <content type="html"><![CDATA[<p>TODO</p>]]></content>
     
@@ -176,9 +176,38 @@
     
       <category term="SpringCloud" scheme="https://yangsiyuan0.github.io/tags/SpringCloud/"/>
     
-      <category term="gateway" scheme="https://yangsiyuan0.github.io/tags/gateway/"/>
+      <category term="kong" scheme="https://yangsiyuan0.github.io/tags/kong/"/>
     
       <category term="网关" scheme="https://yangsiyuan0.github.io/tags/%E7%BD%91%E5%85%B3/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java8特性</title>
+    <link href="https://yangsiyuan0.github.io/2019/10/25/Java%208%20%E7%89%B9%E6%80%A7/"/>
+    <id>https://yangsiyuan0.github.io/2019/10/25/Java 8 特性/</id>
+    <published>2019-10-25T08:35:27.000Z</published>
+    <updated>2019-11-13T13:11:05.649Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p><strong>原文链接</strong>：<a href="https://www.javacodegeeks.com/java-8-features-tutorial.html" target="_blank" rel="noopener">Java 8 Features Tutorial</a> <code>（作者：Andrey Redko）</code></p></blockquote><h2 id="一-简介"><a href="#一-简介" class="headerlink" title="一. 简介"></a>一. 简介</h2><p>Java 8是自Java5（2004年）发布以来Java语言最大的一次版本升级，这个版本包含语言、编译器、库、工具和JVM等方面的十多个新特性。在本文中我们将学习这些新特性，并用实际的例子说明在什么场景下适合使用。<br>这个教程包含Java开发者经常面对的几类问题：</p><ul><li>语言</li><li>编译器</li><li>类库</li><li>开发工具</li><li>运行时（Java虚拟机）</li></ul><h2 id="二-Java语言的新特性"><a href="#二-Java语言的新特性" class="headerlink" title="二. Java语言的新特性"></a>二. Java语言的新特性</h2><p>Java 8是Java的一个重大版本，有人认为，虽然这些新特性领Java开发人员十分期待，但同时也需要花不少精力去学习。在这一小节中，我们将介绍Java 8的大部分新特性</p><h3 id="1-Lambda表达式和函数式接口"><a href="#1-Lambda表达式和函数式接口" class="headerlink" title="1. Lambda表达式和函数式接口"></a>1. Lambda表达式和函数式接口</h3><p>Lambda表达式（也称为闭包）是Java 8中最大和最令人期待的语言改变。它允许我们将函数当成参数传递给某个方法，或者把代码本身当作数据处理：<code>函数式开发者</code>非常熟悉这些概念。很多JVM平台上的语言（<code>Groovy</code>、<code>Scala</code>等）从诞生之日就支持Lambda表达式，但是Java开发者没有选择，只能使用匿名内部类代替Lambda表达式</p><blockquote><p>Lambda的设计耗费了很多时间和很大的社区力量，最终找到一种折中的实现方案，可以实现简洁而紧凑的语言结构。最简单的Lambda表达式可由<code>逗号分隔的参数列表</code>、<code>-&gt;符号</code>和<code>语句块</code>组成，例如</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Arrays.asList( <span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"d"</span> ).forEach( e -&gt; System.out.println( e ) );</span><br></pre></td></tr></table></figure><blockquote><p>在上面这个代码中的参数e的类型是由编译器推理得出的，你也可以显式指定该参数的类型，例如：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Arrays.asList( <span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"d"</span> ).forEach( ( String e ) -&gt; System.out.println( e ) );</span><br></pre></td></tr></table></figure><blockquote><p>如果Lambda表达式需要更复杂的语句块，则可以使用花括号将该语句块括起来，类似于Java中的函数体，例如：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Arrays.asList( <span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"d"</span> ).forEach( e -&gt; &#123;</span><br><span class="line">    System.out.print( e );</span><br><span class="line">    System.out.print( e );&#125; );</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"><span class="keyword">final</span> String separator = <span class="string">","</span>;</span><br><span class="line">Arrays.asList( <span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"d"</span> ).forEach( </span><br><span class="line">    ( String e ) -&gt; System.out.print( e + separator ) );</span><br></pre></td></tr></table></figure><blockquote><p>Lambda表达式有返回值，返回值的类型也由编译器推理得出。如果Lambda表达式中的语句块只有一行，则可以不用使用return语句，下列两个代码片段效果相同：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Arrays.asList( <span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"d"</span> ).sort( ( e1, e2 ) -&gt; e1.compareTo( e2 ) );</span><br><span class="line"></span><br><span class="line">Arrays.asList( <span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"d"</span> ).sort( ( e1, e2 ) -&gt; &#123;</span><br><span class="line">    <span class="keyword">int</span> result = e1.compareTo( e2 );</span><br><span class="line">    <span class="keyword">return</span> result;&#125; );</span><br></pre></td></tr></table></figure><blockquote><p>Lambda的设计者们为了让现有的功能与Lambda表达式良好兼容，考虑了很多方法，于是产生了函数接口这个概念。函数接口指的是只有一个函数的接口，这样的接口可以隐式转换为Lambda表达式。java.lang.Runnable和java.util.concurrent.Callable是函数式接口的最佳例子。在实践中，函数式接口非常脆弱：只要某个开发者在该接口中添加一个函数，则该接口就不再是函数式接口进而导致编译失败。为了克服这种代码层面的脆弱性，并显式说明某个接口是函数式接口，Java 8 提供了一个特殊的注解@FunctionalInterface（Java 库中的所有相关接口都已经带有这个注解了），举个简单的函数式接口的定义：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FunctionalInterfacepublic</span> <span class="class"><span class="keyword">interface</span> <span class="title">Functional</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">method</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"> <span class="comment">// 默认方法和静态方法不会破坏函数式接口的定义，因此如下的代码是合法的</span></span><br><span class="line"><span class="meta">@FunctionalInterfacepublic</span> <span class="class"><span class="keyword">interface</span> <span class="title">FunctionalDefaultMethods</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">method</span><span class="params">()</span></span>;  </span><br><span class="line">    <span class="function"><span class="keyword">default</span> <span class="keyword">void</span> <span class="title">defaultMethod</span><span class="params">()</span> </span>&#123;&#125;        </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>Lambda表达式作为Java 8的最大卖点，它有潜力吸引更多的开发者加入到JVM平台，并在纯Java编程中使用函数式编程的概念。如果你需要了解更多Lambda表达式的细节，可以参考<a href="https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" target="_blank" rel="noopener"><strong>官方文档</strong></a></p><h3 id="2-接口的默认方法和静态方法"><a href="#2-接口的默认方法和静态方法" class="headerlink" title="2. 接口的默认方法和静态方法"></a>2. 接口的默认方法和静态方法</h3><p>Java 8使用两个新概念扩展了接口的含义：默认方法和静态方法。默认方法使得接口有点类似traits，不过要实现的目标不一样。默认方法使得开发者可以在 不破坏二进制兼容性的前提下，往现存接口中添加新的方法，即不强制那些实现了该接口的类也同时实现这个新加的方法。</p><blockquote><p>默认方法和抽象方法之间的区别在于抽象方法需要实现，而默认方法不需要。接口提供的默认方法会被接口的实现类继承或者覆写，例子代码如下：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">interface</span> <span class="title">Defaulable</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Interfaces now allow default methods, the implementer may or </span></span><br><span class="line">    <span class="comment">// may not implement (override) them.</span></span><br><span class="line">    <span class="function"><span class="keyword">default</span> String <span class="title">notRequired</span><span class="params">()</span> </span>&#123; </span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Default implementation"</span>; </span><br><span class="line">    &#125;        </span><br><span class="line">&#125;</span><br><span class="line">        </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultableImpl</span> <span class="keyword">implements</span> <span class="title">Defaulable</span> </span>&#123;&#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">OverridableImpl</span> <span class="keyword">implements</span> <span class="title">Defaulable</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">notRequired</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Overridden implementation"</span>;</span><br><span class="line">    &#125;&#125;</span><br></pre></td></tr></table></figure><p>Defaulable接口使用关键字default定义了一个默认方法notRequired()。DefaultableImpl类实现了这个接口，同时默认继承了这个接口中的默认方法；OverridableImpl类也实现了这个接口，但覆写了该接口的默认方法，并提供了一个不同的实现。</p><blockquote><p>Java 8带来的另一个有趣的特性是在接口中可以定义静态方法，例子代码如下：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">interface</span> <span class="title">DefaulableFactory</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Interfaces now allow static methods</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> Defaulable <span class="title">create</span><span class="params">( Supplier&lt; Defaulable &gt; supplier )</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> supplier.get();</span><br><span class="line">    &#125;&#125;</span><br></pre></td></tr></table></figure><blockquote><p>下面的代码片段整合了默认方法和静态方法的使用场景：</p></blockquote><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">( String[] args )</span> </span>&#123;</span><br><span class="line">    Defaulable defaulable = DefaulableFactory.create( DefaultableImpl::<span class="keyword">new</span> );</span><br><span class="line">    System.out.println( defaulable.notRequired() );</span><br><span class="line">        </span><br><span class="line">    defaulable = DefaulableFactory.create( OverridableImpl::<span class="keyword">new</span> );</span><br><span class="line">    System.out.println( defaulable.notRequired() );&#125;</span><br></pre></td></tr></table></figure><p>这段代码的输出结果如下：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Default implementation</span><br><span class="line">Overridden implementation</span><br></pre></td></tr></table></figure><p>由于JVM上的默认方法的实现在字节码层面提供了支持，因此效率非常高。默认方法允许在不打破现有继承体系的基础上改进接口。该特性在官方库中的应用是：给java.util.Collection接口添加新方法，如stream()、parallelStream()、forEach()和removeIf()等等。尽管默认方法有这么多好处，但在实际开发中应该谨慎使用：在复杂的继承体系中，默认方法可能引起歧义和编译错误。如果你想了解更多细节，可以参考<a href="https://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html" target="_blank" rel="noopener"><strong>官方文档</strong></a></p><h3 id="3-方法引用"><a href="#3-方法引用" class="headerlink" title="3. 方法引用"></a>3. 方法引用</h3><h3 id="4-重复注释"><a href="#4-重复注释" class="headerlink" title="4. 重复注释"></a>4. 重复注释</h3><h3 id="5-更好的类型推断"><a href="#5-更好的类型推断" class="headerlink" title="5. 更好的类型推断"></a>5. 更好的类型推断</h3><h3 id="6-注解的扩展"><a href="#6-注解的扩展" class="headerlink" title="6. 注解的扩展"></a>6. 注解的扩展</h3><h2 id="三-Java编译器的新特性"><a href="#三-Java编译器的新特性" class="headerlink" title="三. Java编译器的新特性"></a>三. Java编译器的新特性</h2><h3 id="1-参数名字"><a href="#1-参数名字" class="headerlink" title="1. 参数名字"></a>1. 参数名字</h3><h2 id="四-Java库的新特性"><a href="#四-Java库的新特性" class="headerlink" title="四. Java库的新特性"></a>四. Java库的新特性</h2><h3 id="1-Optional"><a href="#1-Optional" class="headerlink" title="1. Optional"></a>1. Optional</h3><h3 id="2-Stream"><a href="#2-Stream" class="headerlink" title="2. Stream"></a>2. Stream</h3><h3 id="3-日期时间API-JSR310"><a href="#3-日期时间API-JSR310" class="headerlink" title="3. 日期时间API(JSR310)"></a>3. 日期时间API(JSR310)</h3><h3 id="4-Nashorn-javascript引擎"><a href="#4-Nashorn-javascript引擎" class="headerlink" title="4. Nashorn javascript引擎"></a>4. Nashorn javascript引擎</h3><h3 id="5-Base64"><a href="#5-Base64" class="headerlink" title="5. Base64"></a>5. Base64</h3><h3 id="6-并行数组"><a href="#6-并行数组" class="headerlink" title="6. 并行数组"></a>6. 并行数组</h3><h3 id="7-并发"><a href="#7-并发" class="headerlink" title="7. 并发"></a>7. 并发</h3><h2 id="五-新的工具"><a href="#五-新的工具" class="headerlink" title="五. 新的工具"></a>五. 新的工具</h2><h3 id="1-Nashorn引擎：jjs"><a href="#1-Nashorn引擎：jjs" class="headerlink" title="1. Nashorn引擎：jjs"></a>1. Nashorn引擎：jjs</h3><h3 id="2-类依赖分析工具：jdeps"><a href="#2-类依赖分析工具：jdeps" class="headerlink" title="2. 类依赖分析工具：jdeps"></a>2. 类依赖分析工具：jdeps</h3><h2 id="六-JVM的新特性"><a href="#六-JVM的新特性" class="headerlink" title="六. JVM的新特性"></a>六. JVM的新特性</h2><p>JVM内存永久区已经被metaspace替换（JEP 122）。</p><blockquote><p><code>JVM参数 -XX:PermSize 和 –XX:MaxPermSize被XX:MetaSpaceSize 和 -XX:MaxMetaspaceSize代替。</code></p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;原文链接&lt;/strong&gt;：&lt;a href=&quot;https://www.javacodegeeks.com/java-8-features-tutorial.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;J
+      
+    
+    </summary>
+    
+    
+      <category term="java基础" scheme="https://yangsiyuan0.github.io/categories/java%E5%9F%BA%E7%A1%80/"/>
+    
+    
+      <category term="java" scheme="https://yangsiyuan0.github.io/tags/java/"/>
+    
+      <category term="JDK8" scheme="https://yangsiyuan0.github.io/tags/JDK8/"/>
     
   </entry>
   
@@ -358,11 +387,11 @@
       <category term="SpringBoot" scheme="https://yangsiyuan0.github.io/categories/SpringBoot/"/>
     
     
-      <category term="分布式" scheme="https://yangsiyuan0.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
-    
       <category term="SpringSession" scheme="https://yangsiyuan0.github.io/tags/SpringSession/"/>
     
       <category term="session" scheme="https://yangsiyuan0.github.io/tags/session/"/>
+    
+      <category term="分布式" scheme="https://yangsiyuan0.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F/"/>
     
       <category term="跨域" scheme="https://yangsiyuan0.github.io/tags/%E8%B7%A8%E5%9F%9F/"/>
     
