@@ -1,6 +1,244 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Redis客户端+分布式锁</title>
+    <url>/2019/11/27/Redis%E5%AE%A2%E6%88%B7%E7%AB%AF+%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/</url>
+    <content><![CDATA[<h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>目前，市面上流行的redis客户端主要有三个：jedis、Lettuce、Redisson</p>
+<blockquote>
+<ul>
+<li><strong>Jedis：是Redis 老牌的Java实现客户端，提供了比较全面的Redis命令的支持</strong><br>Jedis中的方法调用是比较底层的暴露的Redis的API，也即Jedis中的Java方法基本和Redis的API保持着一致，因此其API提供了比较全面的Redis命令的支持</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li><strong>Redisson：实现了分布式和可扩展的Java数据结构</strong><br>Redisson中的API进行了比较高的抽象，每个方法调用可能进行了一个或多个Redis方法调用；Redisson实现了分布式和可扩展的Java数据结构。和Jedis相比，功能较为简单，不支持字符串操作，不支持排序、事务、管道、分区等Redis特性。Redisson的宗旨是促进使用者对Redis的关注分离，从而让使用者能够将精力更集中地放在处理业务逻辑上</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li><strong>Lettuce：高级Redis客户端，用于线程安全同步，异步和响应使用，支持集群，Sentinel，管道和编码器</strong></li>
+</ul>
+</blockquote>
+<h2 id="二-三大客户端对比"><a href="#二-三大客户端对比" class="headerlink" title="二. 三大客户端对比"></a>二. 三大客户端对比</h2><h3 id="1-优点"><a href="#1-优点" class="headerlink" title="1. 优点"></a>1. 优点</h3><blockquote>
+<ul>
+<li>Jedis：比较全面的提供了Redis的操作特性</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>Redisson：促使使用者对Redis的关注分离，提供很多分布式相关操作服务，例如分布式锁，分布式集合，可通过Redis支持延迟队列</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>Lettuce：主要在一些分布式缓存框架上使用比较多</li>
+</ul>
+</blockquote>
+<h3 id="2-伸缩性支持"><a href="#2-伸缩性支持" class="headerlink" title="2. 伸缩性支持"></a>2. 伸缩性支持</h3><blockquote>
+<ul>
+<li>Jedis：使用阻塞的I/O，且其方法调用都是同步的，程序流需要等到sockets处理完I/O才能执行，不支持异步。</li>
+</ul>
+<p><strong>Jedis客户端实例不是线程安全的，所以需要通过连接池来使用Jedis</strong></p>
+</blockquote>
+<blockquote>
+<ul>
+<li>Redisson：基于Netty框架的事件驱动的通信层，其方法调用是异步的。</li>
+</ul>
+<p><strong>Redisson的API是线程安全的，所以可以操作单个Redisson连接来完成各种操作</strong></p>
+</blockquote>
+<blockquote>
+<ul>
+<li>Lettuce：基于Netty框架的事件驱动的通信层，其方法调用是异步的。</li>
+</ul>
+<p><strong>Lettuce的API是线程安全的，所以可以操作单个Lettuce连接来完成各种操作</strong></p>
+</blockquote>
+<h3 id="3-pipeline支持"><a href="#3-pipeline支持" class="headerlink" title="3. pipeline支持"></a>3. pipeline支持</h3><p>jedis 通过一定的改造后可以支持pipeline, 具体可以看 Redis 批量操作之pipeline<br>但是 Lettuce 的pipeline行为很奇怪. 在 Spring RedisTemplate 中的 executePipelined 方法中的情况:</p>
+<blockquote>
+<p>有时完全是一条一条命令地发送<br>有时全合并几条命令发送<br>但跟完全 pipeline 的方式不同, 测试多次, 但没发现有一次是完整 pipeline 的</p>
+</blockquote>
+<p><strong>所以如果需要使用pipeline的话, 建议还是使用Jedis</strong></p>
+<h3 id="4-数据结构"><a href="#4-数据结构" class="headerlink" title="4. 数据结构"></a>4. 数据结构</h3><blockquote>
+<ul>
+<li>Jedis仅支持基本的数据类型如：String、Hash、List、Set、Sorted Set</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>Redisson不仅提供了一系列的分布式Java常用对象，基本可以与Java的基本数据结构通用，还提供了许多分布式服务.<br>其中包括（BitSet, Set, Multimap, SortedSet, Map, List, Queue, BlockingQueue, Deque, BlockingDeque, Semaphore, Lock, AtomicLong, CountDownLatch, Publish / Subscribe, Bloom filter, Remote service, Spring cache, Executor service, Live Object service, Scheduler service）</li>
+</ul>
+</blockquote>
+<h3 id="5-关于RedisTemplate的说明"><a href="#5-关于RedisTemplate的说明" class="headerlink" title="5. 关于RedisTemplate的说明"></a>5. 关于RedisTemplate的说明</h3><blockquote>
+<p><code>RedisTemplate是SpringDataRedis中对redis API的高度封装</code></p>
+</blockquote>
+<p>值得关注的是：</p>
+<ul>
+<li><p><strong>springBoot1.×中的默认redis客户端为jedis</strong><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/springboot1+jedis.png" alt=""></p>
+</li>
+<li><p><strong>springBoot2.×中默认的redis客户端切换为了Lettuce</strong><br><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/springboot2+Lettuce.png" alt=""></p>
+</li>
+</ul>
+<h2 id="三-SpringBoot整合实战"><a href="#三-SpringBoot整合实战" class="headerlink" title="三. SpringBoot整合实战"></a>三. SpringBoot整合实战</h2><p>下述整合均以SpringBoot2.*为例</p>
+<h3 id="1-RedisTemplate-Jedis"><a href="#1-RedisTemplate-Jedis" class="headerlink" title="1. RedisTemplate + Jedis"></a>1. RedisTemplate + Jedis</h3><h3 id="2-RedisTemplate-Lettuce"><a href="#2-RedisTemplate-Lettuce" class="headerlink" title="2. RedisTemplate + Lettuce"></a>2. RedisTemplate + Lettuce</h3><h3 id="3-Redisson"><a href="#3-Redisson" class="headerlink" title="3. Redisson"></a>3. Redisson</h3><h2 id="四-分布式锁实现"><a href="#四-分布式锁实现" class="headerlink" title="四. 分布式锁实现"></a>四. 分布式锁实现</h2><h3 id="1-关于分布式锁的简述"><a href="#1-关于分布式锁的简述" class="headerlink" title="1. 关于分布式锁的简述"></a>1. 关于分布式锁的简述</h3><blockquote>
+<p><code>锁，是一种多线程下的互斥机制，用来保证并发下的数据安全</code></p>
+</blockquote>
+<h4 id="1-Java中锁的分类"><a href="#1-Java中锁的分类" class="headerlink" title="1). Java中锁的分类"></a>1). Java中锁的分类</h4><p>一般而言，java中的锁分为如下几类：</p>
+<p><strong>1. 按”看待线程同步”的角度分</strong></p>
+<ul>
+<li><strong>悲观锁</strong>：同一个数据的并发操作，悲观锁认为自己在使用数据的时候一定有别的线程来修改数据，因此在<code>获取数据的时候会先加锁</code>，确保数据不会被别的线程修改【诸如java中的：synchronized、Lock】</li>
+<li><strong>乐观锁</strong>：乐观锁认为自己在使用数据时不会有别的线程修改数据，所以不会添加锁，只是在<code>更新数据的时候去判断之前有没有别的线程更新了这个数据</code>。如果这个数据没有被更新，当前线程将自己修改的数据成功写入。如果数据已经被其他线程更新，则根据不同的实现方式执行不同的操作【Java中通过无锁编程来实现，通常为CAS算法】<blockquote>
+<p><code>悲观锁适合写操作多的场景，先加锁可以保证写操作时数据正确</code><br><code>乐观锁适合读操作多的场景，不加锁的特点能够使其读操作的性能大幅提升</code></p>
+</blockquote>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/%E6%82%B2%E8%A7%82%E9%94%81%E4%B8%8E%E4%B9%90%E8%A7%82%E9%94%81.png" alt=""></p>
+<p><strong>2. 按”锁的分配优先级”分</strong></p>
+<ul>
+<li><strong>公平锁</strong>：公平锁是指多个线程按照申请锁的顺序来获取锁【Java中的ReentrantLock，根据其构造函数指定该锁是否是公平锁，默认是非公平锁】</li>
+<li><strong>非公平锁</strong>：非公平锁是指多个线程获取锁的顺序并不是按照申请锁的顺序，有可能后申请的线程比先申请的线程优先获取锁。有可能，会造成优先级反转或者饥饿现象【Java中的Synchronized即为非公平锁，其通过AQS实现调度】<blockquote>
+<p><code>非公平锁的优点在于吞吐量比公平锁大</code></p>
+</blockquote>
+</li>
+</ul>
+<p><strong>3. 按”是否能被多个线程持有”分</strong></p>
+<ul>
+<li><strong>独享锁</strong>：独享锁是指该锁一次只能被一个线程所持有【Java中的ReentrantLock、Synchronized，即为独享锁】</li>
+<li><strong>共享锁</strong>：共享锁是指该锁可被多个线程所持有【Java中Lock的实现类ReadWriteLock，其读锁是共享锁，其写锁是独享锁】<blockquote>
+<p><code>独享锁与共享锁通过AQS来实现，共享读锁能保证并发读更高效</code><br>同时，这部分可以衍生出另外两类锁：互斥锁(ReentrantLock)、读写锁(即ReadWriteLock)</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>4. 按”锁的状态”分</strong></p>
+<ul>
+<li><strong>偏向锁</strong>：偏向锁是指一段同步代码一直被一个线程所访问，那么该线程会自动获取锁。降低获取锁的代价。</li>
+<li><strong>轻量级锁</strong>：轻量级锁是指当锁是偏向锁的时候，被另一个线程所访问，偏向锁就会升级为轻量级锁，其他线程会通过自旋的形式尝试获取锁，不会阻塞，提高性能</li>
+<li><strong>重量级锁</strong>：重量级锁是指当锁为轻量级锁的时候，另一个线程虽然是自旋，但自旋不会一直持续下去，当自旋一定次数的时候，还没有获取到锁，就会进入阻塞，该锁膨胀为重量级锁。重量级锁会让其他申请的线程进入阻塞，性能降低<blockquote>
+<p><code>关于上文中提及的自旋锁：是指尝试获取锁的线程不会立即阻塞，而是采用循环的方式去尝试获取锁【该方式减少线程上下文切换、但是循环会消耗CPU</code>】</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>5. 其他锁</strong></p>
+<ul>
+<li><strong>可重入锁</strong>：又名递归锁，是指在同一个线程在外层方法获取锁的时候，在进入内层方法会自动获取锁【Java中的ReentrantLock，及是一个可重入锁；Synchronized也可以通过代码实现可重入】<blockquote>
+<p>可重入锁可一定程度避免死锁</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setA</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123; </span><br><span class="line">    Thread.sleep(<span class="number">1000</span>); setB(); </span><br><span class="line">&#125; </span><br><span class="line"><span class="function"><span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setB</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="2-分布式锁的定义"><a href="#2-分布式锁的定义" class="headerlink" title="2). 分布式锁的定义"></a>2). 分布式锁的定义</h4><p>分布式锁主要用于解决，分布式系统中对同一数据产生脏读或重复插入问题，一般而言需要满足如下基本要求：</p>
+<ul>
+<li><strong>互斥性</strong> : 和我们本地锁一样互斥性是最基本，但是分布式锁需要保证在不同节点的不同线程的互斥。</li>
+<li><strong>可重入性</strong> : 同一个节点上的同一个线程如果获取了锁之后那么也可以再次获取这个锁。锁超时:和本地锁一样支持锁超时，防止死锁。</li>
+<li><strong>高效，高可用</strong> : 加锁和解锁需要高效，同时也需要保证高可用防止分布式锁失效，可以增加降级。</li>
+<li><strong>支持阻塞和非阻塞</strong> : 和ReentrantLock一样支持lock和trylock以及tryLock(long timeOut)。</li>
+<li><strong>支持公平锁和非公平锁(可选)</strong> : 公平锁的意思是按照请求加锁的顺序获得锁，非公平锁就相反是无序的。这个一般来说实现的比较少。</li>
+</ul>
+<h3 id="2-分布式锁的常用解决方案"><a href="#2-分布式锁的常用解决方案" class="headerlink" title="2. 分布式锁的常用解决方案"></a>2. 分布式锁的常用解决方案</h3><h4 id="1-数据库悲观锁"><a href="#1-数据库悲观锁" class="headerlink" title="1). 数据库悲观锁"></a>1). 数据库悲观锁</h4><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">使用 <span class="keyword">Select</span>  XXXXXXX  <span class="keyword">for</span>  <span class="keyword">update</span> ; 语句</span><br><span class="line"><span class="keyword">Update</span>  XXXX </span><br><span class="line">提交事务</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>注意</strong>： 悲观锁的行锁及表锁, 效率低。<br><strong>使用场景</strong>：冲突概率比较高的情况下。</p>
+</blockquote>
+<h4 id="2-数据库乐观锁"><a href="#2-数据库乐观锁" class="headerlink" title="2). 数据库乐观锁"></a>2). 数据库乐观锁</h4><p>数据库表字段中增加版本号字段，读取数据时将版本号字段一同读出，数据更新时对此版本号进行加1操作。更新过程中会对版本号进行比较，如果一致，没有发生改变，则会成功执行本次操作，如果版本号不一致，则会更新失败。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">Select</span> XXX，vesion <span class="keyword">from</span> some_table  <span class="keyword">where</span>  <span class="keyword">id</span> =XXX </span><br><span class="line"><span class="keyword">Update</span> some_table  <span class="keyword">set</span>  xxx=? <span class="keyword">version</span>=原版本号+<span class="number">1</span> <span class="keyword">where</span> <span class="keyword">version</span>= 原版本号。</span><br><span class="line">语句执行成功，说明更新成功。失败说明这条资源已被占用，则放弃该操作。</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>使用场景</strong>：冲突概率比较低的情况。</p>
+</blockquote>
+<h4 id="3-基于redis的分布式锁"><a href="#3-基于redis的分布式锁" class="headerlink" title="3). 基于redis的分布式锁"></a>3). 基于redis的分布式锁</h4><p>该方案主要是基于Redis的setnx()、expire()来实现分布式锁。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">setnx(lockey,<span class="number">1</span>) 如果返回<span class="number">0</span>，则说明占位失败；如果返回<span class="number">1</span>说明站位成功</span><br><span class="line">expire()命令对lockey设置超时时间，为了避免死锁问题</span><br><span class="line">执行业务代码后，通过delete命令删除locky</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>注意</strong>：保证Redis的高可用 (Redis 哨兵模式架构，Redis集群模式架构)<br><strong>使用场景</strong>：满足一般的业务需求。</p>
+</blockquote>
+<h4 id="4-基于Zookeeper的分布式锁-TODO"><a href="#4-基于Zookeeper的分布式锁-TODO" class="headerlink" title="4). 基于Zookeeper的分布式锁(TODO)"></a>4). 基于Zookeeper的分布式锁(TODO)</h4><p>主要基于zookeeper 节点名称的唯一性</p>
+<h4 id="5-基于MQ的分阶段提交-TODO"><a href="#5-基于MQ的分阶段提交-TODO" class="headerlink" title="5). 基于MQ的分阶段提交(TODO)"></a>5). 基于MQ的分阶段提交(TODO)</h4><h3 id="3-Jedis实现"><a href="#3-Jedis实现" class="headerlink" title="3. Jedis实现"></a>3. Jedis实现</h3><blockquote>
+<p>Jedis的实现，本质上还是基于redis的原生api。主要有如下三大要点：</p>
+<ul>
+<li>set命令要用set key value px milliseconds nx</li>
+<li>value需要具有唯一性</li>
+<li>释放锁时要验证value值，不能误解锁</li>
+</ul>
+</blockquote>
+<h4 id="1-基于set-key-value-px-milliseconds-nx实现"><a href="#1-基于set-key-value-px-milliseconds-nx实现" class="headerlink" title="1) 基于set key value px milliseconds nx实现"></a>1) 基于set key value px milliseconds nx实现</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">transactionLock</span><span class="params">(<span class="keyword">final</span> String lockKey, String threadName)</span></span>&#123;</span><br><span class="line">	logger.info(threadName + <span class="string">"开始执行加锁"</span>);</span><br><span class="line">	<span class="comment">//锁时间</span></span><br><span class="line">	<span class="keyword">final</span> Long lock_timeout = currtTimeForRedis() + lockTimeout * <span class="number">1000</span> + <span class="number">1</span>;</span><br><span class="line">	Object obj = <span class="keyword">null</span>;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		<span class="comment">// 加锁失败返回null; 加锁成功返回"OK"</span></span><br><span class="line">		obj = redisTemplate.execute(<span class="keyword">new</span> RedisCallback&lt;Object&gt;() &#123;</span><br><span class="line">			<span class="meta">@Override</span></span><br><span class="line">			<span class="function"><span class="keyword">public</span> String <span class="title">doInRedis</span><span class="params">(RedisConnection connection)</span> <span class="keyword">throws</span> DataAccessException </span>&#123;</span><br><span class="line">				JedisCommands commands = (JedisCommands) connection.getNativeConnection();</span><br><span class="line">				<span class="keyword">return</span> commands.set(lockKey, String.valueOf(lock_timeout), <span class="string">"NX"</span>, <span class="string">"PX"</span>, lockTimeout);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		logger.error(<span class="string">"setNX redis error, key : "</span> + lockKey,e);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span>(<span class="string">"OK"</span>.equals(obj))&#123;</span><br><span class="line">		logger.info(threadName + <span class="string">"加锁成功"</span>);</span><br><span class="line">		<span class="keyword">return</span> lock_timeout;</span><br><span class="line">	&#125;</span><br><span class="line">	logger.info(threadName + <span class="string">"加锁失败"</span>);</span><br><span class="line">	<span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-基于setNX实现-不建议使用"><a href="#2-基于setNX实现-不建议使用" class="headerlink" title="2). 基于setNX实现(不建议使用)"></a>2). 基于setNX实现(不建议使用)</h4><blockquote>
+<p>setNX易导致死锁</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">setNX</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> String value)</span> </span>&#123;</span><br><span class="line">	Object obj = <span class="keyword">null</span>;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		obj = redisTemplate.execute(<span class="keyword">new</span> RedisCallback&lt;Object&gt;() &#123;</span><br><span class="line">			<span class="meta">@Override</span></span><br><span class="line">			<span class="function"><span class="keyword">public</span> Object <span class="title">doInRedis</span><span class="params">(RedisConnection connection)</span> <span class="keyword">throws</span> DataAccessException </span>&#123;</span><br><span class="line">				StringRedisSerializer serializer = <span class="keyword">new</span> StringRedisSerializer();</span><br><span class="line">				Boolean success = connection.setNX(serializer.serialize(key), serializer.serialize(value));</span><br><span class="line">				connection.close();</span><br><span class="line">				<span class="keyword">return</span> success;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		logger.error(<span class="string">"setNX redis error, key : "</span> + key);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> obj != <span class="keyword">null</span> ? (Boolean) obj : <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-基于事务实现（不建议使用）"><a href="#3-基于事务实现（不建议使用）" class="headerlink" title="3). 基于事务实现（不建议使用）"></a>3). 基于事务实现（不建议使用）</h4><blockquote>
+<p><code>redis集群下不可用</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">long</span> <span class="title">lock</span><span class="params">(String lockKey, String threadName)</span> </span>&#123;</span><br><span class="line">	logger.info(threadName + <span class="string">"开始执行加锁"</span>);</span><br><span class="line">	<span class="comment">//锁时间</span></span><br><span class="line">	Long lock_timeout = currtTimeForRedis() + lockTimeout * <span class="number">1000</span> + <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">if</span> (setNX(lockKey, String.valueOf(lock_timeout))) &#123;</span><br><span class="line">		<span class="comment">//如果加锁成功</span></span><br><span class="line">		logger.info(threadName + <span class="string">"加锁成功+1"</span>);</span><br><span class="line">		<span class="comment">//设置超时时间，释放内存</span></span><br><span class="line">		expireTime(lockKey, lockTimeout);</span><br><span class="line">		<span class="keyword">return</span> lock_timeout;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">//获取redis里面的时间</span></span><br><span class="line">		Object result = get(lockKey);</span><br><span class="line">		Long currt_lock_timeout_str = result == <span class="keyword">null</span> ? <span class="keyword">null</span> : Long.parseLong(result.toString());</span><br><span class="line">		<span class="comment">//锁已经失效</span></span><br><span class="line">		<span class="keyword">if</span> (currt_lock_timeout_str != <span class="keyword">null</span> &amp;&amp; currt_lock_timeout_str &lt; currtTimeForRedis()) &#123;</span><br><span class="line">			<span class="comment">//判断是否为空，不为空时，说明已经失效，如果被其他线程设置了值，则第二个条件判断无法执行</span></span><br><span class="line">			<span class="comment">//获取上一个锁到期时间，并设置现在的锁到期时间</span></span><br><span class="line">			Long old_lock_timeout_Str = Long.valueOf(getSet(lockKey, String.valueOf(lock_timeout)));</span><br><span class="line">			<span class="keyword">if</span> (old_lock_timeout_Str != <span class="keyword">null</span> &amp;&amp; old_lock_timeout_Str.equals(currt_lock_timeout_str)) &#123;</span><br><span class="line">				<span class="comment">//多线程运行时，多个线程签好都到了这里，但只有一个线程的设置值和当前值相同，它才有权利获取锁</span></span><br><span class="line">				logger.info(threadName + <span class="string">"加锁成功+2"</span>);</span><br><span class="line">				<span class="comment">//设置超时间，释放内存</span></span><br><span class="line">				expireTime(lockKey, lockTimeout);</span><br><span class="line">				<span class="comment">//返回加锁时间</span></span><br><span class="line">				<span class="keyword">return</span> lock_timeout;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-基于lua脚本实现"><a href="#4-基于lua脚本实现" class="headerlink" title="4). 基于lua脚本实现"></a>4). 基于lua脚本实现</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">scriptUnLock</span><span class="params">(<span class="keyword">final</span> String lockKey, <span class="keyword">final</span> <span class="keyword">long</span> lockValue, String threadName)</span> </span>&#123;</span><br><span class="line">	logger.info(threadName + <span class="string">"开始执行解锁"</span>);</span><br><span class="line">	<span class="comment">// 解锁脚本</span></span><br><span class="line">	<span class="keyword">final</span> String script = <span class="string">"if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return -1 end"</span>;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		redisTemplate.execute(<span class="keyword">new</span> RedisCallback&lt;Object&gt;() &#123;</span><br><span class="line">			<span class="meta">@Override</span></span><br><span class="line">			<span class="function"><span class="keyword">public</span> Object <span class="title">doInRedis</span><span class="params">(RedisConnection connection)</span> <span class="keyword">throws</span> DataAccessException </span>&#123;</span><br><span class="line">				StringRedisSerializer serializer = <span class="keyword">new</span> StringRedisSerializer();</span><br><span class="line">				Boolean success = connection.eval(serializer.serialize(script), ReturnType.fromJavaType(<span class="keyword">long</span>.class), <span class="number">1</span> ,</span><br><span class="line">						serializer.serialize(lockKey), serializer.serialize(String.valueOf(lockValue)));</span><br><span class="line">				connection.close();</span><br><span class="line">				<span class="keyword">return</span> success;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		logger.error(<span class="string">"setNX redis error, key : "</span> + lockKey,e);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="4-Redisson实现"><a href="#4-Redisson实现" class="headerlink" title="4. Redisson实现(*)"></a>4. Redisson实现(*)</h3><p>上述基于jedis的分布式锁实现中，存在加锁时只作用于单个节点，如果发生节点挂掉(cluster模式)，或者主从切换时(sentine模式)，会出现锁丢失的请况，为便于理解，举一个例子：</p>
+<ol>
+<li>在Redis的master节点上拿到了锁；</li>
+<li>但是这个加锁的key还没有同步到slave节点；</li>
+<li>master故障，发生故障转移，slave节点升级为master节点；</li>
+<li>导致锁丢失</li>
+</ol>
+<blockquote>
+<p><code>正因为如此，Redis作者antirez基于分布式环境下提出了一种更高级的分布式锁的实现方式：</code><strong>Redlock</strong></p>
+</blockquote>
+<h4 id="1-Redlock算法"><a href="#1-Redlock算法" class="headerlink" title="1).  Redlock算法"></a>1).  Redlock算法</h4><blockquote>
+<p>在Redis的分布式环境中，我们假设有N个Redis master。这些节点完全互相独立，不存在主从复制或者其他集群协调机制。我们<strong>确保将在N个实例上使用与在Redis单实例下相同方法获取和释放锁</strong>。现在我们假设有5个Redis master节点，同时我们需要在5台服务器上面运行这些Redis实例，这样保证他们不会同时都宕掉</p>
+</blockquote>
+<p><strong>为了取到锁，客户端应该执行以下操作：</strong></p>
+<ul>
+<li>获取当前系统时间，以毫秒为单位。</li>
+<li>依次尝试从5个实例，使用相同的key和具有唯一性的value（例如UUID）获取锁。<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">当向Redis请求获取锁时，客户端应该设置一个网络连接和响应超时时间，这个超时时间应该小于锁的失效时间。例如你的锁自动失效时间为10秒，则超时时间应该在5-50毫秒之间。这样可以避免服务器端Redis已经挂掉的情况下，客户端还在死死地等待响应结果。如果服务器端没有在规定时间内响应，客户端应该尽快尝试去另外一个Redis实例请求获取锁。</span><br></pre></td></tr></table></figure></li>
+<li>客户端使用当前时间减去开始获取锁时间（步骤1记录的时间）就得到获取锁使用的时间。<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">当且仅当从大多数（N/2+1，这里是3个节点）的Redis节点都取到锁，并且使用的时间小于锁失效时间时，锁才算获取成功。</span><br></pre></td></tr></table></figure></li>
+<li>如果取到了锁，key的真正有效时间等于有效时间减去获取锁所使用的时间（步骤3计算的结果）。</li>
+<li>如果因为某些原因，获取锁失败（没有在至少N/2+1个Redis实例取到锁或者取锁时间已经超过了有效时间），客户端应该在所有的Redis实例上进行解锁<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">即便某些Redis实例根本就没有加锁成功，防止某些节点获取到锁但是客户端没有得到响应而导致接下来的一段时间不能被重新获取锁</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="2-Redlock源码"><a href="#2-Redlock源码" class="headerlink" title="2).  Redlock源码"></a>2).  Redlock源码</h4><blockquote>
+<p>redisson已经有对redlock算法封装</p>
+</blockquote>
+<p><strong>1. 唯一ID获取</strong></p>
+<p>实现分布式锁的一个非常重要的点就是set的value要具有唯一性，redisson的value是怎样保证value的唯一性呢？<br><code>答案是UUID+threadId</code>。入口在redissonClient.getLock(“REDLOCK_KEY”)，</p>
+<blockquote>
+<p>源码在Redisson.java和RedissonLock.java中：</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">final</span> UUID id = UUID.randomUUID();</span><br><span class="line"><span class="function">String <span class="title">getLockName</span><span class="params">(<span class="keyword">long</span> threadId)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> id + <span class="string">":"</span> + threadId;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>2. 获取锁</strong></p>
+<p>获取锁的代码为redLock.tryLock()或者redLock.tryLock(500, 10000, TimeUnit.MILLISECONDS)，两者的最终核心源码都是下面这段代码，只不过前者获取锁的默认租约时间（leaseTime）是LOCK_EXPIRATION_INTERVAL_SECONDS，即30s</p>
+<blockquote>
+<p>获取锁的命令中:</p>
+<ul>
+<li><code>KEYS[1]</code>  就是Collections.singletonList(getName())，表示分布式锁的key，即REDLOCK_KEY；</li>
+<li><code>ARGV[1]</code>  就是internalLockLeaseTime，即锁的租约时间，默认30s；</li>
+<li><code>ARGV[2]</code>  就是getLockName(threadId)，是获取锁时set的唯一值，即UUID+threadId：</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">&lt;T&gt; <span class="function">RFuture&lt;T&gt; <span class="title">tryLockInnerAsync</span><span class="params">(<span class="keyword">long</span> leaseTime, TimeUnit unit, <span class="keyword">long</span> threadId, RedisStrictCommand&lt;T&gt; command)</span> </span>&#123;</span><br><span class="line">    internalLockLeaseTime = unit.toMillis(leaseTime);</span><br><span class="line">    <span class="comment">// 获取锁时向5个redis实例发送的命令</span></span><br><span class="line">    <span class="keyword">return</span> commandExecutor.evalWriteAsync(getName(), LongCodec.INSTANCE, command,</span><br><span class="line">              <span class="comment">// 首先分布式锁的KEY不能存在，如果确实不存在，那么执行hset命令（hset REDLOCK_KEY uuid+threadId 1），并通过pexpire设置失效时间（也是锁的租约时间）</span></span><br><span class="line">              <span class="string">"if (redis.call('exists', KEYS[1]) == 0) then "</span> +</span><br><span class="line">                  <span class="string">"redis.call('hset', KEYS[1], ARGV[2], 1); "</span> +</span><br><span class="line">                  <span class="string">"redis.call('pexpire', KEYS[1], ARGV[1]); "</span> +</span><br><span class="line">                  <span class="string">"return nil; "</span> +</span><br><span class="line">              <span class="string">"end; "</span> +</span><br><span class="line">              <span class="comment">// 如果分布式锁的KEY已经存在，并且value也匹配，表示是当前线程持有的锁，那么重入次数加1，并且设置失效时间</span></span><br><span class="line">              <span class="string">"if (redis.call('hexists', KEYS[1], ARGV[2]) == 1) then "</span> +</span><br><span class="line">                  <span class="string">"redis.call('hincrby', KEYS[1], ARGV[2], 1); "</span> +</span><br><span class="line">                  <span class="string">"redis.call('pexpire', KEYS[1], ARGV[1]); "</span> +</span><br><span class="line">                  <span class="string">"return nil; "</span> +</span><br><span class="line">              <span class="string">"end; "</span> +</span><br><span class="line">              <span class="comment">// 获取分布式锁的KEY的失效时间毫秒数</span></span><br><span class="line">              <span class="string">"return redis.call('pttl', KEYS[1]);"</span>,</span><br><span class="line">              <span class="comment">// 这三个参数分别对应KEYS[1]，ARGV[1]和ARGV[2]</span></span><br><span class="line">                Collections.&lt;Object&gt;singletonList(getName()), internalLockLeaseTime, getLockName(threadId));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>3. 释放锁</strong></p>
+<p>释放锁的代码为redLock.unlock()，核心源码如下</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> RFuture&lt;Boolean&gt; <span class="title">unlockInnerAsync</span><span class="params">(<span class="keyword">long</span> threadId)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 向5个redis实例都执行如下命令</span></span><br><span class="line">    <span class="keyword">return</span> commandExecutor.evalWriteAsync(getName(), LongCodec.INSTANCE, RedisCommands.EVAL_BOOLEAN,</span><br><span class="line">            <span class="comment">// 如果分布式锁KEY不存在，那么向channel发布一条消息</span></span><br><span class="line">            <span class="string">"if (redis.call('exists', KEYS[1]) == 0) then "</span> +</span><br><span class="line">                <span class="string">"redis.call('publish', KEYS[2], ARGV[1]); "</span> +</span><br><span class="line">                <span class="string">"return 1; "</span> +</span><br><span class="line">            <span class="string">"end;"</span> +</span><br><span class="line">            <span class="comment">// 如果分布式锁存在，但是value不匹配，表示锁已经被占用，那么直接返回</span></span><br><span class="line">            <span class="string">"if (redis.call('hexists', KEYS[1], ARGV[3]) == 0) then "</span> +</span><br><span class="line">                <span class="string">"return nil;"</span> +</span><br><span class="line">            <span class="string">"end; "</span> +</span><br><span class="line">            <span class="comment">// 如果就是当前线程占有分布式锁，那么将重入次数减1</span></span><br><span class="line">            <span class="string">"local counter = redis.call('hincrby', KEYS[1], ARGV[3], -1); "</span> +</span><br><span class="line">            <span class="comment">// 重入次数减1后的值如果大于0，表示分布式锁有重入过，那么只设置失效时间，还不能删除</span></span><br><span class="line">            <span class="string">"if (counter &gt; 0) then "</span> +</span><br><span class="line">                <span class="string">"redis.call('pexpire', KEYS[1], ARGV[2]); "</span> +</span><br><span class="line">                <span class="string">"return 0; "</span> +</span><br><span class="line">            <span class="string">"else "</span> +</span><br><span class="line">                <span class="comment">// 重入次数减1后的值如果为0，表示分布式锁只获取过1次，那么删除这个KEY，并发布解锁消息</span></span><br><span class="line">                <span class="string">"redis.call('del', KEYS[1]); "</span> +</span><br><span class="line">                <span class="string">"redis.call('publish', KEYS[2], ARGV[1]); "</span> +</span><br><span class="line">                <span class="string">"return 1; "</span>+</span><br><span class="line">            <span class="string">"end; "</span> +</span><br><span class="line">            <span class="string">"return nil;"</span>,</span><br><span class="line">            <span class="comment">// 这5个参数分别对应KEYS[1]，KEYS[2]，ARGV[1]，ARGV[2]和ARGV[3]</span></span><br><span class="line">            Arrays.&lt;Object&gt;asList(getName(), getChannelName()), LockPubSub.unlockMessage, internalLockLeaseTime, getLockName(threadId));</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-Redisson实践"><a href="#2-Redisson实践" class="headerlink" title="2).  Redisson实践"></a>2).  Redisson实践</h4><ul>
+<li>引入pom</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.redisson<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>redisson<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.8.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>配置类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Config config = <span class="keyword">new</span> Config();</span><br><span class="line">config.useClusterServers()</span><br><span class="line">    .setScanInterval(<span class="number">2000</span>) <span class="comment">// cluster state scan interval in milliseconds</span></span><br><span class="line">    .addNodeAddress(<span class="string">"redis://127.0.0.1:7000"</span>, <span class="string">"redis://127.0.0.1:7001"</span>)</span><br><span class="line">    .addNodeAddress(<span class="string">"redis://127.0.0.1:7002"</span>);</span><br><span class="line">RedissonClient redisson = Redisson.create(config);</span><br><span class="line">RLock lock = redisson.getLock(<span class="string">"anyLock"</span>);</span><br><span class="line">lock.lock();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    lock.unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>加锁</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Config config1 = <span class="keyword">new</span> Config();</span><br><span class="line">config1.useSingleServer().setAddress(<span class="string">"redis://172.29.1.180:5378"</span>)</span><br><span class="line">        .setPassword(<span class="string">"a123456"</span>).setDatabase(<span class="number">0</span>);</span><br><span class="line">RedissonClient redissonClient1 = Redisson.create(config1);</span><br><span class="line"></span><br><span class="line">Config config2 = <span class="keyword">new</span> Config();</span><br><span class="line">config2.useSingleServer().setAddress(<span class="string">"redis://172.29.1.180:5379"</span>)</span><br><span class="line">        .setPassword(<span class="string">"a123456"</span>).setDatabase(<span class="number">0</span>);</span><br><span class="line">RedissonClient redissonClient2 = Redisson.create(config2);</span><br><span class="line"></span><br><span class="line">Config config3 = <span class="keyword">new</span> Config();</span><br><span class="line">config3.useSingleServer().setAddress(<span class="string">"redis://172.29.1.180:5380"</span>)</span><br><span class="line">        .setPassword(<span class="string">"a123456"</span>).setDatabase(<span class="number">0</span>);</span><br><span class="line">RedissonClient redissonClient3 = Redisson.create(config3);</span><br><span class="line"></span><br><span class="line">String resourceName = <span class="string">"REDLOCK"</span>;</span><br><span class="line">RLock lock1 = redissonClient1.getLock(resourceName);</span><br><span class="line">RLock lock2 = redissonClient2.getLock(resourceName);</span><br><span class="line">RLock lock3 = redissonClient3.getLock(resourceName);</span><br><span class="line"></span><br><span class="line">RedissonRedLock redLock = <span class="keyword">new</span> RedissonRedLock(lock1, lock2, lock3);</span><br><span class="line"><span class="keyword">boolean</span> isLock;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    isLock = redLock.tryLock(<span class="number">500</span>, <span class="number">30000</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">    System.out.println(<span class="string">"isLock = "</span>+isLock);</span><br><span class="line">    <span class="keyword">if</span> (isLock) &#123;</span><br><span class="line">        <span class="comment">//TODO if get lock success, do something;</span></span><br><span class="line">        Thread.sleep(<span class="number">30000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="comment">// 无论如何, 最后都要解锁</span></span><br><span class="line">    System.out.println(<span class="string">""</span>);</span><br><span class="line">    redLock.unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>java基础</category>
+      </categories>
+      <tags>
+        <tag>redis</tag>
+        <tag>分布式锁</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>分布式配置中心预研及其实践</title>
     <url>/2019/11/01/%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E9%A2%84%E7%A0%94%E5%8F%8A%E5%85%B6%E5%AE%9E%E8%B7%B5/</url>
     <content><![CDATA[<blockquote>
@@ -126,9 +364,9 @@
       </categories>
       <tags>
         <tag>SpringCloud</tag>
-        <tag>分布式</tag>
         <tag>springCloudConfig</tag>
         <tag>配置中心</tag>
+        <tag>分布式</tag>
         <tag>Apollo</tag>
         <tag>nacos</tag>
       </tags>
@@ -410,20 +648,6 @@
       </tags>
   </entry>
   <entry>
-    <title>API网关服务-SpringCloud gateway</title>
-    <url>/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-SpringCloud%20Gateway/</url>
-    <content><![CDATA[<p>TODO</p>
-]]></content>
-      <categories>
-        <category>SpringCloud</category>
-      </categories>
-      <tags>
-        <tag>SpringCloud</tag>
-        <tag>网关</tag>
-        <tag>gateway</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>API网关服务-zuul</title>
     <url>/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-zuul/</url>
     <content><![CDATA[<p>TODO</p>
@@ -436,20 +660,6 @@
         <tag>网关</tag>
         <tag>gateway</tag>
         <tag>zuul</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>API网关服务-kong</title>
-    <url>/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-kong/</url>
-    <content><![CDATA[<p>TODO</p>
-]]></content>
-      <categories>
-        <category>SpringCloud</category>
-      </categories>
-      <tags>
-        <tag>SpringCloud</tag>
-        <tag>kong</tag>
-        <tag>网关</tag>
       </tags>
   </entry>
   <entry>
@@ -524,91 +734,31 @@
       </tags>
   </entry>
   <entry>
-    <title>基于SpringBoot的服务监控与健康检查</title>
-    <url>/2019/10/24/%E5%9F%BA%E4%BA%8ESpringBoot%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/</url>
-    <content><![CDATA[<h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。<br>Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等</p>
-<h2 id="二-技术栈简介"><a href="#二-技术栈简介" class="headerlink" title="二. 技术栈简介"></a>二. 技术栈简介</h2><h3 id="1-Prometheus"><a href="#1-Prometheus" class="headerlink" title="1. Prometheus"></a>1. Prometheus</h3><p>Prometheus可以与Grafana监控展现系统无缝集成，可以灵活满足多种自定义的监控需求，提供灵活可配且强大的可视化界面。<br><img src="/images/Prometheus%E7%95%8C%E9%9D%A2.png" alt=""></p>
-<h3 id="2-Actuator"><a href="#2-Actuator" class="headerlink" title="2. Actuator"></a>2. Actuator</h3><p>Actuator作为springboot的Starter POMs中提供的一个特殊依赖模块，极易在springBoot项目中集成，自动为应用构建了一系列用于监控的端点，同时在其他springCloud组件时会对其进行自动扩展(比如在Eurake为/health端点扩展了指标)，因此推荐在SpringBoot项目中引入，其相关监控信息以json数据呈现。<br><img src="/images/actuator%E4%BF%A1%E6%81%AF.png" alt=""></p>
-<h2 id="三-在项目中的实践"><a href="#三-在项目中的实践" class="headerlink" title="三. 在项目中的实践"></a>三. 在项目中的实践</h2><h3 id="1-springBoot项目集成Prometheus"><a href="#1-springBoot项目集成Prometheus" class="headerlink" title="1. springBoot项目集成Prometheus"></a>1. springBoot项目集成Prometheus</h3><h4 id="1-引入maven依赖"><a href="#1-引入maven依赖" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康监控 Prometheus --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_servlet<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_spring_boot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_hotspot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="2-启动类注解开启默认端点"><a href="#2-启动类注解开启默认端点" class="headerlink" title="2). 启动类注解开启默认端点"></a>2). 启动类注解开启默认端点</h4><p>springBoot项目在启动类上增加@EnablePrometheusEndpoin注解即可开启端点；<br>在启动类主方法上增加DefaultExports.initialize(); 可以实现JVM数据监控。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@EnablePrometheusEndpoint</span></span><br><span class="line"><span class="meta">@ServletComponentScan</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> <span class="keyword">extends</span> <span class="title">SpringBootServletInitializer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		DefaultExports.initialize(); <span class="comment">//开启JVM监控</span></span><br><span class="line">		SpringApplication.run(Application.class, args);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="3-实现核心服务耗时直方图监控指标"><a href="#3-实现核心服务耗时直方图监控指标" class="headerlink" title="3). 实现核心服务耗时直方图监控指标"></a>3). 实现核心服务耗时直方图监控指标</h4><p>该功能建议在gateway中实现，各个服务通过路由路径进行访问。具体通过新增指标过滤器实现</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span>: regisPrometheusMetricsFilter  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 【用于监控模块Prometheus】  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> FilterRegistrationBean    返回类型  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019年4月23日</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function">FilterRegistrationBean <span class="title">regisPrometheusMetricsFilter</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Filter prometheusMetricsFilter = <span class="keyword">new</span> MetricsFilter(<span class="string">"http_request_duration_seconds"</span>,</span><br><span class="line">            <span class="string">"Prometheus MetricsFilter http request duration(seconds)"</span>,</span><br><span class="line">            <span class="keyword">new</span> Integer(<span class="number">5</span>),<span class="comment">//pathComponents level</span></span><br><span class="line">            <span class="keyword">null</span>);</span><br><span class="line">    FilterRegistrationBean prometheusFilterReg = <span class="keyword">new</span> FilterRegistrationBean();</span><br><span class="line">    prometheusFilterReg.setFilter(prometheusMetricsFilter);</span><br><span class="line">    prometheusFilterReg.setName(<span class="string">"prometheusMetricsFilter"</span>);</span><br><span class="line">    prometheusFilterReg.addUrlPatterns(<span class="string">"/*"</span>);</span><br><span class="line">    prometheusFilterReg.setOrder(Ordered.HIGHEST_PRECEDENCE);</span><br><span class="line">    <span class="keyword">return</span> prometheusFilterReg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="4-服务基本健康状态监控-自定义"><a href="#4-服务基本健康状态监控-自定义" class="headerlink" title="4). 服务基本健康状态监控[自定义]"></a>4). 服务基本健康状态监控[自定义]</h4><p>该功能通过后台线程的形式对<strong>自定义</strong>的健康状态指标进行更新，指标更新的工具类已由门户封装工具类MyServiceStatus，指标的更新拟有门户提供spring-task任务进行实时更新，建议各个服务启动时设置自身健康状态为healthy，具体健康状态有三种：</p>
-<ul>
-<li>HEALTHY：1</li>
-<li>ERROR：-1</li>
-<li>WARNING：0</li>
-</ul>
-<h5 id="i-健康状态监控工具类MyServiceStatus"><a href="#i-健康状态监控工具类MyServiceStatus" class="headerlink" title="i. 健康状态监控工具类MyServiceStatus"></a>i. 健康状态监控工具类MyServiceStatus</h5><p>基于Gauge，封装一个健康状态操作工具类</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 用于prometheus状态监控</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyServiceStatus</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZHIXIN_APPCODE = <span class="string">"ZHIXIN"</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZHIXIN_APPCODE_ALL = <span class="string">"ZHIXIN_ALL"</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PORTAL_APPCODE = <span class="string">"dyportalserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String RELEASE_APPCODE = <span class="string">"dyreleaseserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WECAHT_APPCODE = <span class="string">"dywechatserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CMS_APPCODE = <span class="string">"dywebpageserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String MICROBLOG_APPCODE = <span class="string">"dymicroblogserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CFB_APPCODE = <span class="string">"dycfbserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String COMMAND_APPCODE = <span class="string">"newscommand"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TV_APPCODE = <span class="string">"dynewsserver"</span>;</span><br><span class="line">    <span class="comment">// 自定义Gauge对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Gauge status = Gauge.build()</span><br><span class="line">            .name(<span class="string">"service_status"</span>)</span><br><span class="line">            .help(<span class="string">"service status"</span>)</span><br><span class="line">            .labelNames(<span class="string">"module"</span>,<span class="string">"submodule"</span>,<span class="string">"description"</span>).register();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 健康状态常量</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> HEALTHY = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> ERROR = -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> WARNING = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 设置某个模块的监控状态，支持多线程并发调用</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> subModuleName  模块名称</span></span><br><span class="line"><span class="comment">     *                       至少要支持一个模块，该模块名称与该服务名称一致，如"creapi"</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> healthStatus  模块健康状态</span></span><br><span class="line"><span class="comment">     *                       1: Health</span></span><br><span class="line"><span class="comment">     *                       -1: Error</span></span><br><span class="line"><span class="comment">     *                       -0: Warning</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setHealthStatus</span><span class="params">(String subModuleName, <span class="keyword">double</span> healthStatus)</span></span>&#123;</span><br><span class="line">	   <span class="keyword">if</span>(PORTAL_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"采编门户"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(RELEASE_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"通稿稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(WECAHT_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"微信稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(CMS_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"网页稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(MICROBLOG_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"微博稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(CFB_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"文件库"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(COMMAND_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"指挥调度"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(TV_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"电视稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">    &#125;</span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Title</span>: setSummaryHealthStatus  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Description</span>: 【设置智新服务中的健康状态】  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> void    返回类型  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@date</span> 2019年5月14日</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setSummaryHealthStatus</span><span class="params">(<span class="keyword">double</span> healthStatus)</span></span>&#123;</span><br><span class="line"><span class="comment">//	   Gauge summaryStatus = Gauge.build().name("service_status").help("service status").labelNames("module").register();</span></span><br><span class="line">	   status.labels(ZHIXIN_APPCODE,ZHIXIN_APPCODE_ALL,<span class="string">"采编平台"</span>).set(healthStatus);</span><br><span class="line">   &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Title</span>: inspectService  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Description</span>: 【获取服务的健康状态】  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> boolean    返回类型  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> Exception </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@date</span> 2019年5月13日</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">monitorInspect</span><span class="params">(String serviceUrl)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">	   <span class="keyword">boolean</span> checkActive = checkActive(serviceUrl);</span><br><span class="line">   		<span class="keyword">return</span> checkActive;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">checkActive</span><span class="params">(String cmeditAddress)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">       <span class="comment">// 1、参数校验</span></span><br><span class="line">       <span class="keyword">if</span>(DyStringUtils.isEmpty(cmeditAddress))&#123;</span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"服务地址为空！"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">// 2、拼接请求接口完整地址</span></span><br><span class="line">       String url = DyStringUtils.combineUrl(cmeditAddress, Constants.CHECK_SERVICE_INTERFACE);</span><br><span class="line">       <span class="comment">// 3.1 封装请求头</span></span><br><span class="line">       Map&lt;String, String&gt; postHeader = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line">       <span class="comment">// 3.2 封装请求体</span></span><br><span class="line">       NameValuePair[] parametersBody = <span class="keyword">new</span> NameValuePair[<span class="number">1</span>];</span><br><span class="line">       parametersBody[<span class="number">0</span>] = <span class="keyword">new</span> NameValuePair(<span class="string">"count"</span>, <span class="string">"11"</span>);</span><br><span class="line">       <span class="comment">// 4、调用接口返回结果</span></span><br><span class="line">       JSONObject paramJson = <span class="keyword">new</span> JSONObject();</span><br><span class="line">       String result = HttpClientUtil.HttpClientPost(url, paramJson.toString(), parametersBody, postHeader);</span><br><span class="line">       <span class="comment">// 5、解析返回的结果</span></span><br><span class="line">       <span class="keyword">if</span> (DyStringUtils.isNotEmpty(result) &amp;&amp; DyStringUtils.isJson(result)) &#123;</span><br><span class="line">        <span class="comment">// 获取数据</span></span><br><span class="line">           JSONObject json = JSONObject.fromObject(result);</span><br><span class="line">           <span class="keyword">return</span> json.getBoolean(<span class="string">"status"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="ii-定时任务监控子模块健康状态"><a href="#ii-定时任务监控子模块健康状态" class="headerlink" title="ii. 定时任务监控子模块健康状态"></a>ii. 定时任务监控子模块健康状态</h5><p>该定时任务，建议在gateway中实现</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 更新应用状态任务</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Conditional</span>(value = &#123; PrometheusCondition.class &#125;) <span class="comment">//使用策略模式控制开关</span></span><br><span class="line"><span class="meta">@Component</span>(<span class="string">"prometheusStatusCheckEngineer"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrometheusStatusCheckEngineer</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(PrometheusStatusCheckEngineer.class);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PORTAL_APPCODE = <span class="string">"portalserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String RELEASE_APPCODE = <span class="string">"releaseserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WECAHT_APPCODE = <span class="string">"wechatserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CMS_APPCODE = <span class="string">"webpageserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String MICROBLOG_APPCODE = <span class="string">"microblogserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CFB_APPCODE = <span class="string">"cfbserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String COMMAND_APPCODE = <span class="string">"commandserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TV_APPCODE = <span class="string">"newsserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] APP_LIST = &#123;PORTAL_APPCODE,</span><br><span class="line">            RELEASE_APPCODE,WECAHT_APPCODE,CMS_APPCODE,</span><br><span class="line">            MICROBLOG_APPCODE,TV_APPCODE,CFB_APPCODE,COMMAND_APPCODE&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ZuulProperties zuulProperties;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Scheduled</span>(cron = <span class="string">"0/30 * * * * ?"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	    logger.info(<span class="string">"----------更新任务状态线程启动-------"</span>);</span><br><span class="line">	    <span class="keyword">double</span> summaryStatus = APP_LIST.length;</span><br><span class="line">	    <span class="keyword">boolean</span> portalStatus = <span class="keyword">false</span>;</span><br><span class="line">	    <span class="keyword">for</span> (String appContext : APP_LIST) &#123;</span><br><span class="line">	        <span class="keyword">try</span> &#123;</span><br><span class="line">	        	Map&lt;String, ZuulRoute&gt; routes = zuulProperties.getRoutes();</span><br><span class="line">	        	ZuulRoute zuulRoute = routes.get(appContext);</span><br><span class="line">	        	String url = zuulRoute.getUrl();</span><br><span class="line">	        	logger.info(<span class="string">"url地址：【"</span> + url + <span class="string">"】"</span>);</span><br><span class="line">	        	<span class="keyword">if</span>(COMMAND_APPCODE.equals(appContext))&#123;</span><br><span class="line">	        		appContext = <span class="string">"newscommand"</span>;</span><br><span class="line">	        	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	        		appContext = <span class="string">"dy"</span>+appContext;</span><br><span class="line">	        	&#125;</span><br><span class="line">	            <span class="keyword">boolean</span> monitorInspect = MyServiceStatus.monitorInspect(url);</span><br><span class="line">	            <span class="keyword">if</span>(monitorInspect)&#123;</span><br><span class="line">	                MyServiceStatus.setHealthStatus(appContext, MyServiceStatus.HEALTHY);</span><br><span class="line">	                <span class="keyword">if</span>(<span class="string">"dyportalserver"</span>.equals(appContext))&#123;</span><br><span class="line">	                	portalStatus = <span class="keyword">true</span>;</span><br><span class="line">	                &#125;</span><br><span class="line">	            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	                MyServiceStatus.setHealthStatus(appContext, MyServiceStatus.WARNING);</span><br><span class="line">	                summaryStatus --;</span><br><span class="line">	            &#125;</span><br><span class="line">	            <span class="keyword">if</span>(summaryStatus == <span class="number">0</span> || !portalStatus)&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.ERROR);</span><br><span class="line">	            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(summaryStatus == APP_LIST.length)&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.HEALTHY);</span><br><span class="line">	            &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.WARNING);</span><br><span class="line">	            &#125;</span><br><span class="line">	        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	            logger.info(<span class="string">"检测【"</span>+appContext+<span class="string">"】健康状态异常"</span>);</span><br><span class="line">	            MyServiceStatus.setHealthStatus(appContext,MyServiceStatus.ERROR);</span><br><span class="line">	        &#125;</span><br><span class="line">	    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="5-访问URL获取监控数据"><a href="#5-访问URL获取监控数据" class="headerlink" title="5). 访问URL获取监控数据"></a>5). 访问URL获取监控数据</h4><p>访问<a href="http://ip:port/项目上下文/prometheus，就会返回Prometheus格式的指标监控信息" target="_blank" rel="noopener">http://ip:port/项目上下文/prometheus，就会返回Prometheus格式的指标监控信息</a><br>一个示例：<code>http://10.10.0.120:9010/gateway/prometheus</code></p>
-<h3 id="2-springBoot项目集成Actuator"><a href="#2-springBoot项目集成Actuator" class="headerlink" title="2. springBoot项目集成Actuator"></a>2. springBoot项目集成Actuator</h3><h4 id="1-引入maven依赖-1"><a href="#1-引入maven依赖-1" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康检查 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h4 id="2-apploication文件配置"><a href="#2-apploication文件配置" class="headerlink" title="2). apploication文件配置"></a>2). apploication文件配置</h4><ul>
-<li>SpringBoot1.x的配置<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">######################## 健康检查配置   ########################</span></span><br><span class="line"><span class="comment">#关闭安全认证</span></span><br><span class="line"><span class="string">management.security.enabled=false</span></span><br><span class="line"><span class="comment">#修改访问路径  2.0之前默认是/2.0默认是 /actuator  可以通过这个属性值修改  </span></span><br><span class="line"><span class="string">management.context-path=/monitor</span></span><br></pre></td></tr></table></figure></li>
-<li>SpringBoot2.x的配置<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">######################## 健康检查配置   ########################</span></span><br><span class="line"><span class="comment">#关闭安全认证</span></span><br><span class="line"><span class="comment">#management.security.enabled=false</span></span><br><span class="line"><span class="string">spring.application.name=gateway</span></span><br><span class="line"><span class="string">management.endpoints.web.exposure.include=*</span></span><br><span class="line"><span class="string">management.metrics.tags.application=$&#123;spring.application.name&#125;</span></span><br><span class="line"><span class="string">management.metrics.export.atlas.enabled=true</span></span><br><span class="line"><span class="string">management.metrics.export.prometheus.enabled=true</span></span><br><span class="line"><span class="string">management.endpoints.web.base-path=/actuator</span></span><br><span class="line"><span class="string">management.endpoint.health.show-details=always</span></span><br></pre></td></tr></table></figure>
-
-</li>
-</ul>
-<h4 id="3-自定义监控数据"><a href="#3-自定义监控数据" class="headerlink" title="3). 自定义监控数据"></a>3). 自定义监控数据</h4><p>通过在application-*.properties中增加配置项，实现对相关配置项进行前端显示，以便在生产环境简单地检测是否存在配置错误的情况，配置项以info.作为前缀</p>
-<ul>
-<li><p>从pom中获取项目元数据</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="string">info.build.name=@project.name@</span></span><br><span class="line"><span class="string">info.build.description=@project.description@</span></span><br><span class="line"><span class="string">info.build.version=@project.version@</span></span><br><span class="line"><span class="string">info.build.groupId=@project.groupId@</span></span><br><span class="line"><span class="string">info.build.artifactId=@project.artifactId@</span></span><br><span class="line"><span class="string">info.build.spring-boot-version=@project.parent.version@</span></span><br><span class="line"><span class="string">info.build.java-version=@java.version@</span></span><br><span class="line"><span class="string">info.build.user-home=@user.home@</span></span><br><span class="line"><span class="string">info.build.source-encoding=@project.build.sourceEncoding@</span></span><br><span class="line"><span class="string">info.build.output-encoding=@project.reporting.outputEncoding@</span></span><br><span class="line"><span class="string">info.build.buidTimestamp=@maven.build.timestamp@</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>配置properties文件中的配置项</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">info.config.description =基础配置</span><br><span class="line">info.config.version =$&#123;version&#125;</span><br><span class="line">info.config.profilesActive=$&#123;spring.profiles.active&#125;</span><br><span class="line">info.config.casServerUrlPrefix=$&#123;casServerUrlPrefix&#125;</span><br><span class="line">info.config.enablePrometheus=$&#123;gateway.prometheus&#125;</span><br><span class="line">info.filter.api.description=api加密过滤器状态</span><br><span class="line">info.filter.api.enable=$&#123;dyportalserver.enableApiFilter&#125;</span><br><span class="line">info.filter.api.filterPattern=$&#123;dyportalserver.apiFilterPattern&#125;</span><br><span class="line">info.filter.api.ignorePattern=$&#123;dyportalserver.apiIgnorePattern&#125;</span><br><span class="line">info.filter.cas.description=cas过滤器状态</span><br><span class="line">info.filter.cas.enable=$&#123;dyportalserver.enableCasFilter&#125;</span><br><span class="line">info.filter.cas.filterPattern=$&#123;dyportalserver.casFilterPattern&#125;</span><br><span class="line">info.filter.cas.ignorePattern=$&#123;dyportalserver.casIgnorePattern&#125;</span><br><span class="line">info.mq.description=消息中间件配置</span><br><span class="line">info.mq.enable=$&#123;gateway.rabbitmq&#125;</span><br><span class="line">info.mq.virtual-host=$&#123;spring.rabbitmq.virtual-host&#125;</span><br><span class="line">info.mq.addresses=$&#123;spring.rabbitmq.addresses&#125;</span><br><span class="line">info.mq.queueTv=$&#123;spring.rabbitmq.queueTv&#125;</span><br><span class="line">info.mq.queueRelease=$&#123;spring.rabbitmq.queueRelease&#125;</span><br><span class="line">info.mq.queueMicroblo=$&#123;spring.rabbitmq.queueMicroblo&#125;</span><br><span class="line">info.mq.queueMicroblo=$&#123;spring.rabbitmq.queueMicroblo&#125;</span><br><span class="line">info.mq.queueWechat=$&#123;spring.rabbitmq.queueWechat&#125;</span><br></pre></td></tr></table></figure>
-
-</li>
-</ul>
-<h4 id="4-访问URL获取监控数据"><a href="#4-访问URL获取监控数据" class="headerlink" title="4). 访问URL获取监控数据"></a>4). 访问URL获取监控数据</h4><blockquote>
-<ul>
-<li>/info：该端点用来返回一些应用自定义的信息</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>/beans：该端点用来获取应用上下文中创建的所有Bean</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>/autoconfig：该端点用来获取应用的自动化配置报告，其中包括所有自动化配置的候选项</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>/env：该端点与/configprops不同，它用来获取应用所有可用的环境属性报告</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>/mappings：该端点用来返回所有Spring MVC的控制器映射关系报告</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>/configprops：该端点用来获取应用中配置的属性信息报告</li>
-</ul>
-</blockquote>
-<h2 id="四-FAQ"><a href="#四-FAQ" class="headerlink" title="四. FAQ"></a>四. FAQ</h2><h3 id="1-Prometheus项目默认的端点没有数据"><a href="#1-Prometheus项目默认的端点没有数据" class="headerlink" title="1. Prometheus项目默认的端点没有数据"></a>1. Prometheus项目默认的端点没有数据</h3><p>数据通过调用服务的query_range端口获取，检查这个路径是否被api加密过滤器或其他全局前置过滤器拦截。</p>
-<h3 id="2-监控数据被暴露出来是否有安全问题"><a href="#2-监控数据被暴露出来是否有安全问题" class="headerlink" title="2. 监控数据被暴露出来是否有安全问题"></a>2. 监控数据被暴露出来是否有安全问题</h3><p>确实有上述问题，因此一方面可以引入安全控制的依赖spring-boot-start-security，实现访问控制端点时均需要验证。另一方面，需要谨慎暴露明码的项目敏感信息</p>
-<h3 id="3-集成Prometheus之后出现热部署启动异常"><a href="#3-集成Prometheus之后出现热部署启动异常" class="headerlink" title="3. 集成Prometheus之后出现热部署启动异常"></a>3. 集成Prometheus之后出现热部署启动异常</h3><p>目前测试中发现有该问题，尚未解决</p>
+    <title>API网关服务-kong</title>
+    <url>/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-kong/</url>
+    <content><![CDATA[<p>TODO</p>
 ]]></content>
       <categories>
-        <category>SpringBoot</category>
+        <category>SpringCloud</category>
       </categories>
       <tags>
-        <tag>springCloud</tag>
-        <tag>prometheus</tag>
-        <tag>actuator</tag>
-        <tag>SpringBoot</tag>
+        <tag>SpringCloud</tag>
+        <tag>kong</tag>
+        <tag>网关</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>API网关服务-SpringCloud gateway</title>
+    <url>/2019/10/25/API%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1-SpringCloud%20Gateway/</url>
+    <content><![CDATA[<p>TODO</p>
+]]></content>
+      <categories>
+        <category>SpringCloud</category>
+      </categories>
+      <tags>
+        <tag>SpringCloud</tag>
+        <tag>网关</tag>
+        <tag>gateway</tag>
       </tags>
   </entry>
   <entry>
@@ -679,6 +829,159 @@
       </categories>
       <tags>
         <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>利用SpringSession实现分布式系统的跨域共享session</title>
+    <url>/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/</url>
+    <content><![CDATA[<h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>在Web项目开发中，会话管理是一个很重要的部分，用于存储与用户相关的数据。通常是由符合session规范的容器来负责存储管理，这也意味着一旦容器关闭、重启，会导致会话失效（在tomcat中，由每个context容器内的Manager对象来管理session）。</p>
+<p>目前，流行的分布式架构下，出现了跨服务器无法共享session的问题。对此，通常的解决方案为，利用redis、JDBC等存储介质，实现session数据的持久化，进而实现分布式会话管理，具体而言，分为如下三种：</p>
+<blockquote>
+<ol>
+<li>使用容器扩展来实现：比如基于Tomcat的tomcat-redis-session-manager，基于Jetty的jetty-session-redis</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>自己实现会话管理的工具类(包括Session管理和Cookie管理)：在需要使用会话的时候都从自己的工具类中获取，而工具类后端存储可以放到Redis中【快融当前采信的方式】</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>使用框架的会话管理工具：即本文中的springSession，基于spring框架，利用spring-data-redis连接池，替换servlet中的会话管理，实现脱离容器而不用改变代码</li>
+</ol>
+</blockquote>
+<h2 id="二-Spring-session简介"><a href="#二-Spring-session简介" class="headerlink" title="二. Spring-session简介"></a>二. Spring-session简介</h2><h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h3><p>简而言之，spring Session 提供了 一套API 和实现，用于管理用户的 Session 信息，基于此概念，其具有如下特性：</p>
+<blockquote>
+<ul>
+<li>Session持久化在外部存储介质中，通过配置自行切换(redis,mongo, Apache Geode)</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>控制 sessionid 如何在客户端和服务器之间进行交换，便于编写 Restful API (从 HTTP 头信息中获取 sessionid ，而不必再依赖于 cookie)</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>非 Web 请求的处理代码中，能够访问 session 数据</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>支持每个浏览器上使用多个 session<br><img src="/images/springSessionFeature.png" alt=""></li>
+</ul>
+</blockquote>
+<h3 id="2-模块"><a href="#2-模块" class="headerlink" title="2. 模块"></a>2. 模块</h3><p>Spring-session具体提供了如下四个模块：<br> <img src="/images/springSessionModule.png" alt=""></p>
+<h3 id="3-关键接口-类"><a href="#3-关键接口-类" class="headerlink" title="3. 关键接口/类"></a>3. 关键接口/类</h3><p>实现session管理器的时候，有两个必须要解决的核心问题：如何(利用外部存储介质)构建集群环境下高可用的session，对于传入的请求该如何确定该用哪个session实例。归根结底，关键问题在于sessionId如何传递？？？</p>
+<blockquote>
+<ol>
+<li>针对第一个问题，Spring Session定义了一组标准的接口，可以通过实现这些接口间接访问底层的数据存储：<ul>
+<li>org.springframework.session.Session<br>  <code>定义了session的基本功能：设置、移除属性(该接口并不关心具体存储介质)，因此具有比servletHttpSession更广泛的应用场景</code></li>
+<li>org.springframework.session.ExpiringSession<br>  <code>session接口的扩展，提供判断session是否过期(一个典型的实现类RedisSession)</code></li>
+<li>org.springframework.session.SessionRepository<br>  <code>定义了创建、保存、删除以及检索session的方法，将Session实例真正保存到数据存储的逻辑是在这个接口的实现中编码完成的(一个典型的实现类RedisOperationsSessionRepository)</code></li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>针对第二个问题，就HTTP协议而言， Spring Session定义了一个接口两个默认实现类：<ul>
+<li>HttpSessionStrategy接口</li>
+<li>CookieHttpSessionStrategy实现类(使用cookie将请求与session id关联)</li>
+<li>HeaderHttpSessionStrategy实现类(使用header将请求与session id关联)</li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>相关包装类(实现对http的支持)<ul>
+<li>SessionRepositoryRequestWrapper</li>
+<li>SessionRepositoryResponseWrapper<br><code>Spring-session对HTTP的支持是通过标准的servlet filter来实现的，这个filter必须要配置为拦截所有的web应用请求，并且它应该是filter链中的第一个filter。Spring Session filter会确保随后调用javax.servlet.http.HttpServletRequest的getSession()方法时，都会返回Spring Session的HttpSession实例，而不是应用服务器默认的HttpSession</code></li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="4">
+<li>过滤器<ul>
+<li>SessionRepositoryFilter<br><code>通过实现ServletFilter接口，创建3)中请求与响应对象，然后调用其余的filter，实现获得的session对象均为springsession的实例</code></li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<h3 id="4-生命周期"><a href="#4-生命周期" class="headerlink" title="4. 生命周期"></a>4. 生命周期</h3><h4 id="4-1-创建session"><a href="#4-1-创建session" class="headerlink" title="4.1 创建session"></a>4.1 创建session</h4><p>RedisSession 在创建时设置 3 个变量 creationTime ，maxInactiveInterval ，lastAccessedTime</p>
+<h4 id="4-2-获取session"><a href="#4-2-获取session" class="headerlink" title="4.2 获取session"></a>4.2 获取session</h4><p>应用通过getSession(boolean create)方法来获取session数据【create 表示 session 不存在时是否创建新的 session】，具体步骤如下：</p>
+<ul>
+<li>getSession方法首先请求的.CURRENT_SESSION属性来获取 currentSession</li>
+<li>获取不到，则从 request 取出sessionId【该步骤依赖具体的 HttpSessionStrategy 的实现】</li>
+<li>然后读取 spring:session:sessions:[sessionId] 的值，同时根据 lastAccessedTime 和 MaxInactiveIntervalInSeconds 来判断这个 session 是否过期。</li>
+<li>如果request中没有sessionId ，说明该用户是第一次访问，会根据不同的实现来创建一个新的 session</li>
+</ul>
+<h4 id="4-3-删除session"><a href="#4-3-删除session" class="headerlink" title="4.3 删除session"></a>4.3 删除session</h4><p>spring session在访问有效期内，每一次访问都会更新 lastAccessedTime 的值，过期时间为lastAccessedTime + maxInactiveInterval ，也即在有效期内每访问一次，有效期就向后延长 maxInactiveInterval，对于过期数据，一般有如下三种删除策略</p>
+<ul>
+<li>定时删除: 即在设置键的过期时间的同时，创建一个定时器， 当键的过期时间到来时，立即删除。</li>
+<li>惰性删除，即在访问键的时候，判断键是否过期，过期则删除，否则返回该键值</li>
+<li>定期删除，即每隔一段时间，程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定</li>
+</ul>
+<h3 id="5-Spring-session在-redis中的数据结构"><a href="#5-Spring-session在-redis中的数据结构" class="headerlink" title="5. Spring-session在 redis中的数据结构"></a>5. Spring-session在 redis中的数据结构</h3><ul>
+<li>SET 类型的spring:session:expireations：<br>min 表示从 1970 年 1 月 1 日 0 点 0 分经过的分钟数， SET 集合的 member 为 expires:[sessionId] ,表示 members 会在 min 分钟后过期</li>
+<li>String 类型的spring:session:sessions:expires:[sessionId]：<br>该数据的 TTL 表示 sessionId 过期的剩余时间，即 maxInactiveInterval</li>
+<li>Hash 类型的spring:session:sessions:[sessionId]：<br>session 保存的数据，记录了 creationTime，maxInactiveInterval，lastAccessedTime，attribute。前两个数据是用于 session 过期管理的辅助数据结构<h3 id="6-注意事项"><a href="#6-注意事项" class="headerlink" title="6.注意事项"></a>6.注意事项</h3></li>
+<li>spring-session 要求 Redis 版本在2.8及以上</li>
+<li>默认情况下，session 存储在 redis 的 key 是“spring:session::”，但如果有多个系统同时使用一个 redis，则会冲突，此时应该配置 redisNamespace 值</li>
+<li>如果想在 session 中保存一个对象，必须实现了 Serializable接口</li>
+<li>session 的域不同会生成新的 session 的，需进行网关代理、负载均衡、或者自定义HttpSessionStrategy策略并进行跨域处理</li>
+</ul>
+<h2 id="三-Spring-session在项目中的实践"><a href="#三-Spring-session在项目中的实践" class="headerlink" title="三. Spring-session在项目中的实践"></a>三. Spring-session在项目中的实践</h2><h3 id="1-引入POM依赖"><a href="#1-引入POM依赖" class="headerlink" title="1.引入POM依赖"></a>1.引入POM依赖</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">!—注意Spring</span> <span class="attr">Boot</span>版本 <span class="attr">--</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.session<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-session-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-添加application配置项"><a href="#2-添加application配置项" class="headerlink" title="2.添加application配置项"></a>2.添加application配置项</h3><p>配置文件application.properties</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">########## springSession相关配置 ##########</span></span><br><span class="line"><span class="comment">#session过期时间(秒)</span></span><br><span class="line"><span class="string">spring.session.store-type=redis</span></span><br><span class="line"><span class="comment"># session最大超时时间(分钟)，默认为30</span></span><br><span class="line"><span class="string">【如果新建了RedisSessionConfig类，该项配置失效，需在配置类上以注解形式配置过期时间】</span></span><br><span class="line"><span class="string">server.session.timeout=60</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-添加配置类"><a href="#3-添加配置类" class="headerlink" title="3.添加配置类"></a>3.添加配置类</h3><ul>
+<li>基本配置，配置类开启Redis Http Session</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@EnableRedisHttpSession  //开启redisHttpSession</span><br><span class="line">public class HttpSessionConfig &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>进阶配置：</p>
+</li>
+<li><p>由于快融前端项目存在跨域情况，默认的方式sessionId获取为null，导致每次生成全新的session对象，需配置 自定义的 CookieSerializer 来指定配置信息：</p>
+</li>
+<li><p>MyDefaultSessionCookieConfig：自定义CookieSerializer 所有配置项</p>
+</li>
+<li><p>HttpSessionConfig：自定义sessionId获取策略(快融项目中基于cookie策略)</p>
+</li>
+</ul>
+<h3 id="4-设置过滤器"><a href="#4-设置过滤器" class="headerlink" title="4. 设置过滤器"></a>4. 设置过滤器</h3><p>主要用于兼容快融项目当前的redis管理用户信息方式，保持portalkey管理的用信息的生命周期，与session同步【具体参见ApiOriginFilter类】</p>
+<h3 id="4-前端处理"><a href="#4-前端处理" class="headerlink" title="4. 前端处理"></a>4. 前端处理</h3><p>前端处理主要分为两部分 (对封装的公共ajaxRequest进行修改)：</p>
+<ul>
+<li>ajax跨域允许携带cookie：withCredentials属性</li>
+<li>ajax中ession过期的后处理：dataFilter方法</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">	xhrFields:&#123;<span class="attr">withCredentials</span>:<span class="literal">true</span>&#125;, <span class="comment">//当前请求为跨域类型时是否在请求中协带cookie</span></span><br><span class="line">	url: defaults.url,</span><br><span class="line">	type: defaults.type,</span><br><span class="line">	data: defaults.data,</span><br><span class="line">	<span class="keyword">async</span>: defaults.async,</span><br><span class="line">	cache: defaults.cache,</span><br><span class="line">	dataType: defaults.dataType,</span><br><span class="line">	contentType: defaults.contentType,</span><br><span class="line">	beforeSend: <span class="function"><span class="keyword">function</span> (<span class="params">XHR</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(defaults.isHaveHeader)&#123;</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"userId"</span>, userId);</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"token"</span>, token);</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"tenantId"</span>, tenantId);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	error: <span class="function"><span class="keyword">function</span> (<span class="params">XMLHttpRequest, textStatus, errorThrown</span>) </span>&#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">"错误信息"</span> + errorThrown.toString());</span><br><span class="line">	&#125;,</span><br><span class="line">	dataFilter: <span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123; <span class="comment">//监听session过期，清除用户信息，返回登录页</span></span><br><span class="line">		<span class="keyword">if</span>((data.status == <span class="literal">false</span> || data.status == <span class="string">"false"</span>) &amp;&amp; data.msg == <span class="string">"会话过期"</span>)&#123;</span><br><span class="line">			portal.util.alertBox(<span class="string">"会话过期"</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">return</span> data;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	success: defaults.success</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="四-FAQ"><a href="#四-FAQ" class="headerlink" title="四. FAQ"></a>四. FAQ</h2><h3 id="1-快融-2-0-3版本-当前基于redis的方式存在什么弊端："><a href="#1-快融-2-0-3版本-当前基于redis的方式存在什么弊端：" class="headerlink" title="1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端："></a>1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端：</h3><ul>
+<li>必须自定义代码实现相关redis操作，对业务代码具有侵入性</li>
+<li>所有接口调用时，需另外手动调用一次更新redis的接口，增加前端代码负荷</li>
+<li>前端必须利用localstorage缓存记住redis的key，由于localstorage的生命周期及作用域问题，导致浏览器关闭再打开用户登录状态仍然保持的问题</li>
+</ul>
+<h3 id="2-Spring-session在redis中为什么存在三个key："><a href="#2-Spring-session在redis中为什么存在三个key：" class="headerlink" title="2. Spring-session在redis中为什么存在三个key："></a>2. Spring-session在redis中为什么存在三个key：</h3><ul>
+<li>Sessions：记录 session 本身的数据</li>
+<li>Expires：标记 session 的准确过期时间</li>
+<li>expiration ：利用set集合存储一分钟内会过期的Sessions的key, 保证 session 能够被及时删除，spring 监听事件能够被及时处理<br><img src="/images/springSessionRedis.png" alt=""></li>
+</ul>
+<h3 id="3-为什么利用server-session-timeout配置session过期时间无效"><a href="#3-为什么利用server-session-timeout配置session过期时间无效" class="headerlink" title="3. 为什么利用server.session.timeout配置session过期时间无效"></a>3. 为什么利用server.session.timeout配置session过期时间无效</h3><p>当使用了自定义的RedisSessionConfig类时，session过期时间将以该类注解上的配置为准。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自定义session过期时间(单位s)</span></span><br><span class="line"><span class="meta">@EnableRedisHttpSession</span>(redisNamespace=<span class="string">"spring:gateway:session:NewsEditing-cas"</span>, maxInstanceIntervalSeconds = <span class="number">60</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpSessionConfig</span> <span class="keyword">implements</span> <span class="title">ApplicationContextWare</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-Session何时进行更新"><a href="#4-Session何时进行更新" class="headerlink" title="4. Session何时进行更新"></a>4. Session何时进行更新</h3><p>Session 的更新由    SessionRepositoryFilter过滤器完成，每次请求均会自动更新session过期时间</p>
+]]></content>
+      <categories>
+        <category>SpringBoot</category>
+      </categories>
+      <tags>
+        <tag>分布式</tag>
+        <tag>SpringSession</tag>
+        <tag>session</tag>
+        <tag>跨域</tag>
       </tags>
   </entry>
   <entry>
@@ -1433,156 +1736,91 @@
       </tags>
   </entry>
   <entry>
-    <title>利用SpringSession实现分布式系统的跨域共享session</title>
-    <url>/2019/10/24/%E5%88%A9%E7%94%A8SpringSession%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%B7%A8%E5%9F%9F%E5%85%B1%E4%BA%ABsession/</url>
-    <content><![CDATA[<h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>在Web项目开发中，会话管理是一个很重要的部分，用于存储与用户相关的数据。通常是由符合session规范的容器来负责存储管理，这也意味着一旦容器关闭、重启，会导致会话失效（在tomcat中，由每个context容器内的Manager对象来管理session）。</p>
-<p>目前，流行的分布式架构下，出现了跨服务器无法共享session的问题。对此，通常的解决方案为，利用redis、JDBC等存储介质，实现session数据的持久化，进而实现分布式会话管理，具体而言，分为如下三种：</p>
-<blockquote>
-<ol>
-<li>使用容器扩展来实现：比如基于Tomcat的tomcat-redis-session-manager，基于Jetty的jetty-session-redis</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="2">
-<li>自己实现会话管理的工具类(包括Session管理和Cookie管理)：在需要使用会话的时候都从自己的工具类中获取，而工具类后端存储可以放到Redis中【快融当前采信的方式】</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="3">
-<li>使用框架的会话管理工具：即本文中的springSession，基于spring框架，利用spring-data-redis连接池，替换servlet中的会话管理，实现脱离容器而不用改变代码</li>
-</ol>
-</blockquote>
-<h2 id="二-Spring-session简介"><a href="#二-Spring-session简介" class="headerlink" title="二. Spring-session简介"></a>二. Spring-session简介</h2><h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h3><p>简而言之，spring Session 提供了 一套API 和实现，用于管理用户的 Session 信息，基于此概念，其具有如下特性：</p>
-<blockquote>
-<ul>
-<li>Session持久化在外部存储介质中，通过配置自行切换(redis,mongo, Apache Geode)</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>控制 sessionid 如何在客户端和服务器之间进行交换，便于编写 Restful API (从 HTTP 头信息中获取 sessionid ，而不必再依赖于 cookie)</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>非 Web 请求的处理代码中，能够访问 session 数据</li>
-</ul>
-</blockquote>
-<blockquote>
-<ul>
-<li>支持每个浏览器上使用多个 session<br><img src="/images/springSessionFeature.png" alt=""></li>
-</ul>
-</blockquote>
-<h3 id="2-模块"><a href="#2-模块" class="headerlink" title="2. 模块"></a>2. 模块</h3><p>Spring-session具体提供了如下四个模块：<br> <img src="/images/springSessionModule.png" alt=""></p>
-<h3 id="3-关键接口-类"><a href="#3-关键接口-类" class="headerlink" title="3. 关键接口/类"></a>3. 关键接口/类</h3><p>实现session管理器的时候，有两个必须要解决的核心问题：如何(利用外部存储介质)构建集群环境下高可用的session，对于传入的请求该如何确定该用哪个session实例。归根结底，关键问题在于sessionId如何传递？？？</p>
-<blockquote>
-<ol>
-<li>针对第一个问题，Spring Session定义了一组标准的接口，可以通过实现这些接口间接访问底层的数据存储：<ul>
-<li>org.springframework.session.Session<br>  <code>定义了session的基本功能：设置、移除属性(该接口并不关心具体存储介质)，因此具有比servletHttpSession更广泛的应用场景</code></li>
-<li>org.springframework.session.ExpiringSession<br>  <code>session接口的扩展，提供判断session是否过期(一个典型的实现类RedisSession)</code></li>
-<li>org.springframework.session.SessionRepository<br>  <code>定义了创建、保存、删除以及检索session的方法，将Session实例真正保存到数据存储的逻辑是在这个接口的实现中编码完成的(一个典型的实现类RedisOperationsSessionRepository)</code></li>
-</ul>
-</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="2">
-<li>针对第二个问题，就HTTP协议而言， Spring Session定义了一个接口两个默认实现类：<ul>
-<li>HttpSessionStrategy接口</li>
-<li>CookieHttpSessionStrategy实现类(使用cookie将请求与session id关联)</li>
-<li>HeaderHttpSessionStrategy实现类(使用header将请求与session id关联)</li>
-</ul>
-</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="3">
-<li>相关包装类(实现对http的支持)<ul>
-<li>SessionRepositoryRequestWrapper</li>
-<li>SessionRepositoryResponseWrapper<br><code>Spring-session对HTTP的支持是通过标准的servlet filter来实现的，这个filter必须要配置为拦截所有的web应用请求，并且它应该是filter链中的第一个filter。Spring Session filter会确保随后调用javax.servlet.http.HttpServletRequest的getSession()方法时，都会返回Spring Session的HttpSession实例，而不是应用服务器默认的HttpSession</code></li>
-</ul>
-</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="4">
-<li>过滤器<ul>
-<li>SessionRepositoryFilter<br><code>通过实现ServletFilter接口，创建3)中请求与响应对象，然后调用其余的filter，实现获得的session对象均为springsession的实例</code></li>
-</ul>
-</li>
-</ol>
-</blockquote>
-<h3 id="4-生命周期"><a href="#4-生命周期" class="headerlink" title="4. 生命周期"></a>4. 生命周期</h3><h4 id="4-1-创建session"><a href="#4-1-创建session" class="headerlink" title="4.1 创建session"></a>4.1 创建session</h4><p>RedisSession 在创建时设置 3 个变量 creationTime ，maxInactiveInterval ，lastAccessedTime</p>
-<h4 id="4-2-获取session"><a href="#4-2-获取session" class="headerlink" title="4.2 获取session"></a>4.2 获取session</h4><p>应用通过getSession(boolean create)方法来获取session数据【create 表示 session 不存在时是否创建新的 session】，具体步骤如下：</p>
-<ul>
-<li>getSession方法首先请求的.CURRENT_SESSION属性来获取 currentSession</li>
-<li>获取不到，则从 request 取出sessionId【该步骤依赖具体的 HttpSessionStrategy 的实现】</li>
-<li>然后读取 spring:session:sessions:[sessionId] 的值，同时根据 lastAccessedTime 和 MaxInactiveIntervalInSeconds 来判断这个 session 是否过期。</li>
-<li>如果request中没有sessionId ，说明该用户是第一次访问，会根据不同的实现来创建一个新的 session</li>
-</ul>
-<h4 id="4-3-删除session"><a href="#4-3-删除session" class="headerlink" title="4.3 删除session"></a>4.3 删除session</h4><p>spring session在访问有效期内，每一次访问都会更新 lastAccessedTime 的值，过期时间为lastAccessedTime + maxInactiveInterval ，也即在有效期内每访问一次，有效期就向后延长 maxInactiveInterval，对于过期数据，一般有如下三种删除策略</p>
-<ul>
-<li>定时删除: 即在设置键的过期时间的同时，创建一个定时器， 当键的过期时间到来时，立即删除。</li>
-<li>惰性删除，即在访问键的时候，判断键是否过期，过期则删除，否则返回该键值</li>
-<li>定期删除，即每隔一段时间，程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定</li>
-</ul>
-<h3 id="5-Spring-session在-redis中的数据结构"><a href="#5-Spring-session在-redis中的数据结构" class="headerlink" title="5. Spring-session在 redis中的数据结构"></a>5. Spring-session在 redis中的数据结构</h3><ul>
-<li>SET 类型的spring:session:expireations：<br>min 表示从 1970 年 1 月 1 日 0 点 0 分经过的分钟数， SET 集合的 member 为 expires:[sessionId] ,表示 members 会在 min 分钟后过期</li>
-<li>String 类型的spring:session:sessions:expires:[sessionId]：<br>该数据的 TTL 表示 sessionId 过期的剩余时间，即 maxInactiveInterval</li>
-<li>Hash 类型的spring:session:sessions:[sessionId]：<br>session 保存的数据，记录了 creationTime，maxInactiveInterval，lastAccessedTime，attribute。前两个数据是用于 session 过期管理的辅助数据结构<h3 id="6-注意事项"><a href="#6-注意事项" class="headerlink" title="6.注意事项"></a>6.注意事项</h3></li>
-<li>spring-session 要求 Redis 版本在2.8及以上</li>
-<li>默认情况下，session 存储在 redis 的 key 是“spring:session::”，但如果有多个系统同时使用一个 redis，则会冲突，此时应该配置 redisNamespace 值</li>
-<li>如果想在 session 中保存一个对象，必须实现了 Serializable接口</li>
-<li>session 的域不同会生成新的 session 的，需进行网关代理、负载均衡、或者自定义HttpSessionStrategy策略并进行跨域处理</li>
-</ul>
-<h2 id="三-Spring-session在项目中的实践"><a href="#三-Spring-session在项目中的实践" class="headerlink" title="三. Spring-session在项目中的实践"></a>三. Spring-session在项目中的实践</h2><h3 id="1-引入POM依赖"><a href="#1-引入POM依赖" class="headerlink" title="1.引入POM依赖"></a>1.引入POM依赖</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">!—注意Spring</span> <span class="attr">Boot</span>版本 <span class="attr">--</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.session<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-session-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="2-添加application配置项"><a href="#2-添加application配置项" class="headerlink" title="2.添加application配置项"></a>2.添加application配置项</h3><p>配置文件application.properties</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">########## springSession相关配置 ##########</span></span><br><span class="line"><span class="comment">#session过期时间(秒)</span></span><br><span class="line"><span class="string">spring.session.store-type=redis</span></span><br><span class="line"><span class="comment"># session最大超时时间(分钟)，默认为30</span></span><br><span class="line"><span class="string">【如果新建了RedisSessionConfig类，该项配置失效，需在配置类上以注解形式配置过期时间】</span></span><br><span class="line"><span class="string">server.session.timeout=60</span></span><br></pre></td></tr></table></figure>
-<h3 id="3-添加配置类"><a href="#3-添加配置类" class="headerlink" title="3.添加配置类"></a>3.添加配置类</h3><ul>
-<li>基本配置，配置类开启Redis Http Session</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@EnableRedisHttpSession  //开启redisHttpSession</span><br><span class="line">public class HttpSessionConfig &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>进阶配置：</p>
-</li>
-<li><p>由于快融前端项目存在跨域情况，默认的方式sessionId获取为null，导致每次生成全新的session对象，需配置 自定义的 CookieSerializer 来指定配置信息：</p>
-</li>
-<li><p>MyDefaultSessionCookieConfig：自定义CookieSerializer 所有配置项</p>
-</li>
-<li><p>HttpSessionConfig：自定义sessionId获取策略(快融项目中基于cookie策略)</p>
-</li>
-</ul>
-<h3 id="4-设置过滤器"><a href="#4-设置过滤器" class="headerlink" title="4. 设置过滤器"></a>4. 设置过滤器</h3><p>主要用于兼容快融项目当前的redis管理用户信息方式，保持portalkey管理的用信息的生命周期，与session同步【具体参见ApiOriginFilter类】</p>
-<h3 id="4-前端处理"><a href="#4-前端处理" class="headerlink" title="4. 前端处理"></a>4. 前端处理</h3><p>前端处理主要分为两部分 (对封装的公共ajaxRequest进行修改)：</p>
-<ul>
-<li>ajax跨域允许携带cookie：withCredentials属性</li>
-<li>ajax中ession过期的后处理：dataFilter方法</li>
-</ul>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">	xhrFields:&#123;<span class="attr">withCredentials</span>:<span class="literal">true</span>&#125;, <span class="comment">//当前请求为跨域类型时是否在请求中协带cookie</span></span><br><span class="line">	url: defaults.url,</span><br><span class="line">	type: defaults.type,</span><br><span class="line">	data: defaults.data,</span><br><span class="line">	<span class="keyword">async</span>: defaults.async,</span><br><span class="line">	cache: defaults.cache,</span><br><span class="line">	dataType: defaults.dataType,</span><br><span class="line">	contentType: defaults.contentType,</span><br><span class="line">	beforeSend: <span class="function"><span class="keyword">function</span> (<span class="params">XHR</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(defaults.isHaveHeader)&#123;</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"userId"</span>, userId);</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"token"</span>, token);</span><br><span class="line">			XHR.setRequestHeader(<span class="string">"tenantId"</span>, tenantId);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	error: <span class="function"><span class="keyword">function</span> (<span class="params">XMLHttpRequest, textStatus, errorThrown</span>) </span>&#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">"错误信息"</span> + errorThrown.toString());</span><br><span class="line">	&#125;,</span><br><span class="line">	dataFilter: <span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123; <span class="comment">//监听session过期，清除用户信息，返回登录页</span></span><br><span class="line">		<span class="keyword">if</span>((data.status == <span class="literal">false</span> || data.status == <span class="string">"false"</span>) &amp;&amp; data.msg == <span class="string">"会话过期"</span>)&#123;</span><br><span class="line">			portal.util.alertBox(<span class="string">"会话过期"</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">return</span> data;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	success: defaults.success</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+    <title>基于SpringBoot的服务监控与健康检查</title>
+    <url>/2019/10/24/%E5%9F%BA%E4%BA%8ESpringBoot%E7%9A%84%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5/</url>
+    <content><![CDATA[<h2 id="一-前言"><a href="#一-前言" class="headerlink" title="一. 前言"></a>一. 前言</h2><p>Prometheus是参考Google监控系统实现的新一代多维度指标实时监控告警系统，为满足大型项目的应用服务监控的需求。<br>Actuator 是 Spring Boot 提供的对应用系统的自省和监控的集成功能，可以查看应用配置的详细信息，例如自动化配置信息、创建的 Spring beans 以及一些环境属性等</p>
+<h2 id="二-技术栈简介"><a href="#二-技术栈简介" class="headerlink" title="二. 技术栈简介"></a>二. 技术栈简介</h2><h3 id="1-Prometheus"><a href="#1-Prometheus" class="headerlink" title="1. Prometheus"></a>1. Prometheus</h3><p>Prometheus可以与Grafana监控展现系统无缝集成，可以灵活满足多种自定义的监控需求，提供灵活可配且强大的可视化界面。<br><img src="/images/Prometheus%E7%95%8C%E9%9D%A2.png" alt=""></p>
+<h3 id="2-Actuator"><a href="#2-Actuator" class="headerlink" title="2. Actuator"></a>2. Actuator</h3><p>Actuator作为springboot的Starter POMs中提供的一个特殊依赖模块，极易在springBoot项目中集成，自动为应用构建了一系列用于监控的端点，同时在其他springCloud组件时会对其进行自动扩展(比如在Eurake为/health端点扩展了指标)，因此推荐在SpringBoot项目中引入，其相关监控信息以json数据呈现。<br><img src="/images/actuator%E4%BF%A1%E6%81%AF.png" alt=""></p>
+<h2 id="三-在项目中的实践"><a href="#三-在项目中的实践" class="headerlink" title="三. 在项目中的实践"></a>三. 在项目中的实践</h2><h3 id="1-springBoot项目集成Prometheus"><a href="#1-springBoot项目集成Prometheus" class="headerlink" title="1. springBoot项目集成Prometheus"></a>1. springBoot项目集成Prometheus</h3><h4 id="1-引入maven依赖"><a href="#1-引入maven依赖" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康监控 Prometheus --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_servlet<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_spring_boot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.prometheus<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>simpleclient_hotspot<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-<h2 id="四-FAQ"><a href="#四-FAQ" class="headerlink" title="四. FAQ"></a>四. FAQ</h2><h3 id="1-快融-2-0-3版本-当前基于redis的方式存在什么弊端："><a href="#1-快融-2-0-3版本-当前基于redis的方式存在什么弊端：" class="headerlink" title="1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端："></a>1. 快融(2.0.3版本)当前基于redis的方式存在什么弊端：</h3><ul>
-<li>必须自定义代码实现相关redis操作，对业务代码具有侵入性</li>
-<li>所有接口调用时，需另外手动调用一次更新redis的接口，增加前端代码负荷</li>
-<li>前端必须利用localstorage缓存记住redis的key，由于localstorage的生命周期及作用域问题，导致浏览器关闭再打开用户登录状态仍然保持的问题</li>
-</ul>
-<h3 id="2-Spring-session在redis中为什么存在三个key："><a href="#2-Spring-session在redis中为什么存在三个key：" class="headerlink" title="2. Spring-session在redis中为什么存在三个key："></a>2. Spring-session在redis中为什么存在三个key：</h3><ul>
-<li>Sessions：记录 session 本身的数据</li>
-<li>Expires：标记 session 的准确过期时间</li>
-<li>expiration ：利用set集合存储一分钟内会过期的Sessions的key, 保证 session 能够被及时删除，spring 监听事件能够被及时处理<br><img src="/images/springSessionRedis.png" alt=""></li>
-</ul>
-<h3 id="3-为什么利用server-session-timeout配置session过期时间无效"><a href="#3-为什么利用server-session-timeout配置session过期时间无效" class="headerlink" title="3. 为什么利用server.session.timeout配置session过期时间无效"></a>3. 为什么利用server.session.timeout配置session过期时间无效</h3><p>当使用了自定义的RedisSessionConfig类时，session过期时间将以该类注解上的配置为准。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 自定义session过期时间(单位s)</span></span><br><span class="line"><span class="meta">@EnableRedisHttpSession</span>(redisNamespace=<span class="string">"spring:gateway:session:NewsEditing-cas"</span>, maxInstanceIntervalSeconds = <span class="number">60</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpSessionConfig</span> <span class="keyword">implements</span> <span class="title">ApplicationContextWare</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-启动类注解开启默认端点"><a href="#2-启动类注解开启默认端点" class="headerlink" title="2). 启动类注解开启默认端点"></a>2). 启动类注解开启默认端点</h4><p>springBoot项目在启动类上增加@EnablePrometheusEndpoin注解即可开启端点；<br>在启动类主方法上增加DefaultExports.initialize(); 可以实现JVM数据监控。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@EnablePrometheusEndpoint</span></span><br><span class="line"><span class="meta">@ServletComponentScan</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> <span class="keyword">extends</span> <span class="title">SpringBootServletInitializer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		DefaultExports.initialize(); <span class="comment">//开启JVM监控</span></span><br><span class="line">		SpringApplication.run(Application.class, args);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="4-Session何时进行更新"><a href="#4-Session何时进行更新" class="headerlink" title="4. Session何时进行更新"></a>4. Session何时进行更新</h3><p>Session 的更新由    SessionRepositoryFilter过滤器完成，每次请求均会自动更新session过期时间</p>
+<h4 id="3-实现核心服务耗时直方图监控指标"><a href="#3-实现核心服务耗时直方图监控指标" class="headerlink" title="3). 实现核心服务耗时直方图监控指标"></a>3). 实现核心服务耗时直方图监控指标</h4><p>该功能建议在gateway中实现，各个服务通过路由路径进行访问。具体通过新增指标过滤器实现</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span>: regisPrometheusMetricsFilter  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 【用于监控模块Prometheus】  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> FilterRegistrationBean    返回类型  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2019年4月23日</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function">FilterRegistrationBean <span class="title">regisPrometheusMetricsFilter</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Filter prometheusMetricsFilter = <span class="keyword">new</span> MetricsFilter(<span class="string">"http_request_duration_seconds"</span>,</span><br><span class="line">            <span class="string">"Prometheus MetricsFilter http request duration(seconds)"</span>,</span><br><span class="line">            <span class="keyword">new</span> Integer(<span class="number">5</span>),<span class="comment">//pathComponents level</span></span><br><span class="line">            <span class="keyword">null</span>);</span><br><span class="line">    FilterRegistrationBean prometheusFilterReg = <span class="keyword">new</span> FilterRegistrationBean();</span><br><span class="line">    prometheusFilterReg.setFilter(prometheusMetricsFilter);</span><br><span class="line">    prometheusFilterReg.setName(<span class="string">"prometheusMetricsFilter"</span>);</span><br><span class="line">    prometheusFilterReg.addUrlPatterns(<span class="string">"/*"</span>);</span><br><span class="line">    prometheusFilterReg.setOrder(Ordered.HIGHEST_PRECEDENCE);</span><br><span class="line">    <span class="keyword">return</span> prometheusFilterReg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-服务基本健康状态监控-自定义"><a href="#4-服务基本健康状态监控-自定义" class="headerlink" title="4). 服务基本健康状态监控[自定义]"></a>4). 服务基本健康状态监控[自定义]</h4><p>该功能通过后台线程的形式对<strong>自定义</strong>的健康状态指标进行更新，指标更新的工具类已由门户封装工具类MyServiceStatus，指标的更新拟有门户提供spring-task任务进行实时更新，建议各个服务启动时设置自身健康状态为healthy，具体健康状态有三种：</p>
+<ul>
+<li>HEALTHY：1</li>
+<li>ERROR：-1</li>
+<li>WARNING：0</li>
+</ul>
+<h5 id="i-健康状态监控工具类MyServiceStatus"><a href="#i-健康状态监控工具类MyServiceStatus" class="headerlink" title="i. 健康状态监控工具类MyServiceStatus"></a>i. 健康状态监控工具类MyServiceStatus</h5><p>基于Gauge，封装一个健康状态操作工具类</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 用于prometheus状态监控</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyServiceStatus</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZHIXIN_APPCODE = <span class="string">"ZHIXIN"</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String ZHIXIN_APPCODE_ALL = <span class="string">"ZHIXIN_ALL"</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PORTAL_APPCODE = <span class="string">"dyportalserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String RELEASE_APPCODE = <span class="string">"dyreleaseserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WECAHT_APPCODE = <span class="string">"dywechatserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CMS_APPCODE = <span class="string">"dywebpageserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String MICROBLOG_APPCODE = <span class="string">"dymicroblogserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CFB_APPCODE = <span class="string">"dycfbserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String COMMAND_APPCODE = <span class="string">"newscommand"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TV_APPCODE = <span class="string">"dynewsserver"</span>;</span><br><span class="line">    <span class="comment">// 自定义Gauge对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Gauge status = Gauge.build()</span><br><span class="line">            .name(<span class="string">"service_status"</span>)</span><br><span class="line">            .help(<span class="string">"service status"</span>)</span><br><span class="line">            .labelNames(<span class="string">"module"</span>,<span class="string">"submodule"</span>,<span class="string">"description"</span>).register();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 健康状态常量</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> HEALTHY = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> ERROR = -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">double</span> WARNING = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 设置某个模块的监控状态，支持多线程并发调用</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> subModuleName  模块名称</span></span><br><span class="line"><span class="comment">     *                       至少要支持一个模块，该模块名称与该服务名称一致，如"creapi"</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> healthStatus  模块健康状态</span></span><br><span class="line"><span class="comment">     *                       1: Health</span></span><br><span class="line"><span class="comment">     *                       -1: Error</span></span><br><span class="line"><span class="comment">     *                       -0: Warning</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setHealthStatus</span><span class="params">(String subModuleName, <span class="keyword">double</span> healthStatus)</span></span>&#123;</span><br><span class="line">	   <span class="keyword">if</span>(PORTAL_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"采编门户"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(RELEASE_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"通稿稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(WECAHT_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"微信稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(CMS_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"网页稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(MICROBLOG_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"微博稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(CFB_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"文件库"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(COMMAND_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"指挥调度"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">	   <span class="keyword">if</span>(TV_APPCODE.equals(subModuleName))&#123;</span><br><span class="line">		   status.labels(ZHIXIN_APPCODE,subModuleName,<span class="string">"电视稿件"</span>).set(healthStatus); </span><br><span class="line">	   &#125;</span><br><span class="line">    &#125;</span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Title</span>: setSummaryHealthStatus  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Description</span>: 【设置智新服务中的健康状态】  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> void    返回类型  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@date</span> 2019年5月14日</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setSummaryHealthStatus</span><span class="params">(<span class="keyword">double</span> healthStatus)</span></span>&#123;</span><br><span class="line"><span class="comment">//	   Gauge summaryStatus = Gauge.build().name("service_status").help("service status").labelNames("module").register();</span></span><br><span class="line">	   status.labels(ZHIXIN_APPCODE,ZHIXIN_APPCODE_ALL,<span class="string">"采编平台"</span>).set(healthStatus);</span><br><span class="line">   &#125;</span><br><span class="line">   </span><br><span class="line">   <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Title</span>: inspectService  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@Description</span>: 【获取服务的健康状态】  </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@return</span> boolean    返回类型  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> Exception </span></span><br><span class="line"><span class="comment">    * <span class="doctag">@date</span> 2019年5月13日</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">monitorInspect</span><span class="params">(String serviceUrl)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">	   <span class="keyword">boolean</span> checkActive = checkActive(serviceUrl);</span><br><span class="line">   		<span class="keyword">return</span> checkActive;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">checkActive</span><span class="params">(String cmeditAddress)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">       <span class="comment">// 1、参数校验</span></span><br><span class="line">       <span class="keyword">if</span>(DyStringUtils.isEmpty(cmeditAddress))&#123;</span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"服务地址为空！"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">// 2、拼接请求接口完整地址</span></span><br><span class="line">       String url = DyStringUtils.combineUrl(cmeditAddress, Constants.CHECK_SERVICE_INTERFACE);</span><br><span class="line">       <span class="comment">// 3.1 封装请求头</span></span><br><span class="line">       Map&lt;String, String&gt; postHeader = <span class="keyword">new</span> HashMap&lt;String, String&gt;();</span><br><span class="line">       <span class="comment">// 3.2 封装请求体</span></span><br><span class="line">       NameValuePair[] parametersBody = <span class="keyword">new</span> NameValuePair[<span class="number">1</span>];</span><br><span class="line">       parametersBody[<span class="number">0</span>] = <span class="keyword">new</span> NameValuePair(<span class="string">"count"</span>, <span class="string">"11"</span>);</span><br><span class="line">       <span class="comment">// 4、调用接口返回结果</span></span><br><span class="line">       JSONObject paramJson = <span class="keyword">new</span> JSONObject();</span><br><span class="line">       String result = HttpClientUtil.HttpClientPost(url, paramJson.toString(), parametersBody, postHeader);</span><br><span class="line">       <span class="comment">// 5、解析返回的结果</span></span><br><span class="line">       <span class="keyword">if</span> (DyStringUtils.isNotEmpty(result) &amp;&amp; DyStringUtils.isJson(result)) &#123;</span><br><span class="line">        <span class="comment">// 获取数据</span></span><br><span class="line">           JSONObject json = JSONObject.fromObject(result);</span><br><span class="line">           <span class="keyword">return</span> json.getBoolean(<span class="string">"status"</span>);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="ii-定时任务监控子模块健康状态"><a href="#ii-定时任务监控子模块健康状态" class="headerlink" title="ii. 定时任务监控子模块健康状态"></a>ii. 定时任务监控子模块健康状态</h5><p>该定时任务，建议在gateway中实现</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Author</span>: ysy</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>: 更新应用状态任务</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Conditional</span>(value = &#123; PrometheusCondition.class &#125;) <span class="comment">//使用策略模式控制开关</span></span><br><span class="line"><span class="meta">@Component</span>(<span class="string">"prometheusStatusCheckEngineer"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrometheusStatusCheckEngineer</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(PrometheusStatusCheckEngineer.class);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PORTAL_APPCODE = <span class="string">"portalserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String RELEASE_APPCODE = <span class="string">"releaseserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WECAHT_APPCODE = <span class="string">"wechatserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CMS_APPCODE = <span class="string">"webpageserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String MICROBLOG_APPCODE = <span class="string">"microblogserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String CFB_APPCODE = <span class="string">"cfbserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String COMMAND_APPCODE = <span class="string">"commandserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TV_APPCODE = <span class="string">"newsserver"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] APP_LIST = &#123;PORTAL_APPCODE,</span><br><span class="line">            RELEASE_APPCODE,WECAHT_APPCODE,CMS_APPCODE,</span><br><span class="line">            MICROBLOG_APPCODE,TV_APPCODE,CFB_APPCODE,COMMAND_APPCODE&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ZuulProperties zuulProperties;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Scheduled</span>(cron = <span class="string">"0/30 * * * * ?"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	    logger.info(<span class="string">"----------更新任务状态线程启动-------"</span>);</span><br><span class="line">	    <span class="keyword">double</span> summaryStatus = APP_LIST.length;</span><br><span class="line">	    <span class="keyword">boolean</span> portalStatus = <span class="keyword">false</span>;</span><br><span class="line">	    <span class="keyword">for</span> (String appContext : APP_LIST) &#123;</span><br><span class="line">	        <span class="keyword">try</span> &#123;</span><br><span class="line">	        	Map&lt;String, ZuulRoute&gt; routes = zuulProperties.getRoutes();</span><br><span class="line">	        	ZuulRoute zuulRoute = routes.get(appContext);</span><br><span class="line">	        	String url = zuulRoute.getUrl();</span><br><span class="line">	        	logger.info(<span class="string">"url地址：【"</span> + url + <span class="string">"】"</span>);</span><br><span class="line">	        	<span class="keyword">if</span>(COMMAND_APPCODE.equals(appContext))&#123;</span><br><span class="line">	        		appContext = <span class="string">"newscommand"</span>;</span><br><span class="line">	        	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	        		appContext = <span class="string">"dy"</span>+appContext;</span><br><span class="line">	        	&#125;</span><br><span class="line">	            <span class="keyword">boolean</span> monitorInspect = MyServiceStatus.monitorInspect(url);</span><br><span class="line">	            <span class="keyword">if</span>(monitorInspect)&#123;</span><br><span class="line">	                MyServiceStatus.setHealthStatus(appContext, MyServiceStatus.HEALTHY);</span><br><span class="line">	                <span class="keyword">if</span>(<span class="string">"dyportalserver"</span>.equals(appContext))&#123;</span><br><span class="line">	                	portalStatus = <span class="keyword">true</span>;</span><br><span class="line">	                &#125;</span><br><span class="line">	            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">	                MyServiceStatus.setHealthStatus(appContext, MyServiceStatus.WARNING);</span><br><span class="line">	                summaryStatus --;</span><br><span class="line">	            &#125;</span><br><span class="line">	            <span class="keyword">if</span>(summaryStatus == <span class="number">0</span> || !portalStatus)&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.ERROR);</span><br><span class="line">	            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(summaryStatus == APP_LIST.length)&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.HEALTHY);</span><br><span class="line">	            &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">	            	MyServiceStatus.setSummaryHealthStatus(MyServiceStatus.WARNING);</span><br><span class="line">	            &#125;</span><br><span class="line">	        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	            logger.info(<span class="string">"检测【"</span>+appContext+<span class="string">"】健康状态异常"</span>);</span><br><span class="line">	            MyServiceStatus.setHealthStatus(appContext,MyServiceStatus.ERROR);</span><br><span class="line">	        &#125;</span><br><span class="line">	    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-访问URL获取监控数据"><a href="#5-访问URL获取监控数据" class="headerlink" title="5). 访问URL获取监控数据"></a>5). 访问URL获取监控数据</h4><p>访问<a href="http://ip:port/项目上下文/prometheus，就会返回Prometheus格式的指标监控信息" target="_blank" rel="noopener">http://ip:port/项目上下文/prometheus，就会返回Prometheus格式的指标监控信息</a><br>一个示例：<code>http://10.10.0.120:9010/gateway/prometheus</code></p>
+<h3 id="2-springBoot项目集成Actuator"><a href="#2-springBoot项目集成Actuator" class="headerlink" title="2. springBoot项目集成Actuator"></a>2. springBoot项目集成Actuator</h3><h4 id="1-引入maven依赖-1"><a href="#1-引入maven依赖-1" class="headerlink" title="1). 引入maven依赖"></a>1). 引入maven依赖</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 健康检查 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-actuator<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-apploication文件配置"><a href="#2-apploication文件配置" class="headerlink" title="2). apploication文件配置"></a>2). apploication文件配置</h4><ul>
+<li>SpringBoot1.x的配置<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">######################## 健康检查配置   ########################</span></span><br><span class="line"><span class="comment">#关闭安全认证</span></span><br><span class="line"><span class="string">management.security.enabled=false</span></span><br><span class="line"><span class="comment">#修改访问路径  2.0之前默认是/2.0默认是 /actuator  可以通过这个属性值修改  </span></span><br><span class="line"><span class="string">management.context-path=/monitor</span></span><br></pre></td></tr></table></figure></li>
+<li>SpringBoot2.x的配置<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment">######################## 健康检查配置   ########################</span></span><br><span class="line"><span class="comment">#关闭安全认证</span></span><br><span class="line"><span class="comment">#management.security.enabled=false</span></span><br><span class="line"><span class="string">spring.application.name=gateway</span></span><br><span class="line"><span class="string">management.endpoints.web.exposure.include=*</span></span><br><span class="line"><span class="string">management.metrics.tags.application=$&#123;spring.application.name&#125;</span></span><br><span class="line"><span class="string">management.metrics.export.atlas.enabled=true</span></span><br><span class="line"><span class="string">management.metrics.export.prometheus.enabled=true</span></span><br><span class="line"><span class="string">management.endpoints.web.base-path=/actuator</span></span><br><span class="line"><span class="string">management.endpoint.health.show-details=always</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="3-自定义监控数据"><a href="#3-自定义监控数据" class="headerlink" title="3). 自定义监控数据"></a>3). 自定义监控数据</h4><p>通过在application-*.properties中增加配置项，实现对相关配置项进行前端显示，以便在生产环境简单地检测是否存在配置错误的情况，配置项以info.作为前缀</p>
+<ul>
+<li><p>从pom中获取项目元数据</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="string">info.build.name=@project.name@</span></span><br><span class="line"><span class="string">info.build.description=@project.description@</span></span><br><span class="line"><span class="string">info.build.version=@project.version@</span></span><br><span class="line"><span class="string">info.build.groupId=@project.groupId@</span></span><br><span class="line"><span class="string">info.build.artifactId=@project.artifactId@</span></span><br><span class="line"><span class="string">info.build.spring-boot-version=@project.parent.version@</span></span><br><span class="line"><span class="string">info.build.java-version=@java.version@</span></span><br><span class="line"><span class="string">info.build.user-home=@user.home@</span></span><br><span class="line"><span class="string">info.build.source-encoding=@project.build.sourceEncoding@</span></span><br><span class="line"><span class="string">info.build.output-encoding=@project.reporting.outputEncoding@</span></span><br><span class="line"><span class="string">info.build.buidTimestamp=@maven.build.timestamp@</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置properties文件中的配置项</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">info.config.description =基础配置</span><br><span class="line">info.config.version =$&#123;version&#125;</span><br><span class="line">info.config.profilesActive=$&#123;spring.profiles.active&#125;</span><br><span class="line">info.config.casServerUrlPrefix=$&#123;casServerUrlPrefix&#125;</span><br><span class="line">info.config.enablePrometheus=$&#123;gateway.prometheus&#125;</span><br><span class="line">info.filter.api.description=api加密过滤器状态</span><br><span class="line">info.filter.api.enable=$&#123;dyportalserver.enableApiFilter&#125;</span><br><span class="line">info.filter.api.filterPattern=$&#123;dyportalserver.apiFilterPattern&#125;</span><br><span class="line">info.filter.api.ignorePattern=$&#123;dyportalserver.apiIgnorePattern&#125;</span><br><span class="line">info.filter.cas.description=cas过滤器状态</span><br><span class="line">info.filter.cas.enable=$&#123;dyportalserver.enableCasFilter&#125;</span><br><span class="line">info.filter.cas.filterPattern=$&#123;dyportalserver.casFilterPattern&#125;</span><br><span class="line">info.filter.cas.ignorePattern=$&#123;dyportalserver.casIgnorePattern&#125;</span><br><span class="line">info.mq.description=消息中间件配置</span><br><span class="line">info.mq.enable=$&#123;gateway.rabbitmq&#125;</span><br><span class="line">info.mq.virtual-host=$&#123;spring.rabbitmq.virtual-host&#125;</span><br><span class="line">info.mq.addresses=$&#123;spring.rabbitmq.addresses&#125;</span><br><span class="line">info.mq.queueTv=$&#123;spring.rabbitmq.queueTv&#125;</span><br><span class="line">info.mq.queueRelease=$&#123;spring.rabbitmq.queueRelease&#125;</span><br><span class="line">info.mq.queueMicroblo=$&#123;spring.rabbitmq.queueMicroblo&#125;</span><br><span class="line">info.mq.queueMicroblo=$&#123;spring.rabbitmq.queueMicroblo&#125;</span><br><span class="line">info.mq.queueWechat=$&#123;spring.rabbitmq.queueWechat&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="4-访问URL获取监控数据"><a href="#4-访问URL获取监控数据" class="headerlink" title="4). 访问URL获取监控数据"></a>4). 访问URL获取监控数据</h4><blockquote>
+<ul>
+<li>/info：该端点用来返回一些应用自定义的信息</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/beans：该端点用来获取应用上下文中创建的所有Bean</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/autoconfig：该端点用来获取应用的自动化配置报告，其中包括所有自动化配置的候选项</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/env：该端点与/configprops不同，它用来获取应用所有可用的环境属性报告</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/mappings：该端点用来返回所有Spring MVC的控制器映射关系报告</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>/configprops：该端点用来获取应用中配置的属性信息报告</li>
+</ul>
+</blockquote>
+<h2 id="四-FAQ"><a href="#四-FAQ" class="headerlink" title="四. FAQ"></a>四. FAQ</h2><h3 id="1-Prometheus项目默认的端点没有数据"><a href="#1-Prometheus项目默认的端点没有数据" class="headerlink" title="1. Prometheus项目默认的端点没有数据"></a>1. Prometheus项目默认的端点没有数据</h3><p>数据通过调用服务的query_range端口获取，检查这个路径是否被api加密过滤器或其他全局前置过滤器拦截。</p>
+<h3 id="2-监控数据被暴露出来是否有安全问题"><a href="#2-监控数据被暴露出来是否有安全问题" class="headerlink" title="2. 监控数据被暴露出来是否有安全问题"></a>2. 监控数据被暴露出来是否有安全问题</h3><p>确实有上述问题，因此一方面可以引入安全控制的依赖spring-boot-start-security，实现访问控制端点时均需要验证。另一方面，需要谨慎暴露明码的项目敏感信息</p>
+<h3 id="3-集成Prometheus之后出现热部署启动异常"><a href="#3-集成Prometheus之后出现热部署启动异常" class="headerlink" title="3. 集成Prometheus之后出现热部署启动异常"></a>3. 集成Prometheus之后出现热部署启动异常</h3><p>目前测试中发现有该问题，尚未解决</p>
 ]]></content>
       <categories>
         <category>SpringBoot</category>
       </categories>
       <tags>
-        <tag>SpringSession</tag>
-        <tag>session</tag>
-        <tag>分布式</tag>
-        <tag>跨域</tag>
+        <tag>springCloud</tag>
+        <tag>prometheus</tag>
+        <tag>actuator</tag>
+        <tag>SpringBoot</tag>
       </tags>
   </entry>
   <entry>
