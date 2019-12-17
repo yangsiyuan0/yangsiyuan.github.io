@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="定时器,分布式调度," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="小土狗的博客" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="xxl-job实践 官方文档：XXL-JOB官方文档  1. 前言XXL-JOB是一个分布式任务调度平台，其核心设计目标是开发迅速、学习简单、轻量级、易扩展  依赖mysql，不依赖第三方调度中心【elastic-job依赖zookeeper】 支持任务的动态修改 支持可视化修改(WEB页面直接进行CRUD操作) 支持多种任务模式：Bean模式(类级别)、Bean模式(方法级别)、Glue模式">
+<meta name="keywords" content="定时器,分布式调度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xxl-job实践">
+<meta property="og:url" content="https:&#x2F;&#x2F;yangsiyuan0.github.io&#x2F;2019&#x2F;12&#x2F;17&#x2F;xxl-job%E5%AE%9E%E8%B7%B5&#x2F;index.html">
+<meta property="og:site_name" content="小土狗的博客">
+<meta property="og:description" content="xxl-job实践 官方文档：XXL-JOB官方文档  1. 前言XXL-JOB是一个分布式任务调度平台，其核心设计目标是开发迅速、学习简单、轻量级、易扩展  依赖mysql，不依赖第三方调度中心【elastic-job依赖zookeeper】 支持任务的动态修改 支持可视化修改(WEB页面直接进行CRUD操作) 支持多种任务模式：Bean模式(类级别)、Bean模式(方法级别)、Glue模式">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;yangsiyuan0&#x2F;GitPic&#x2F;master&#x2F;evernote&#x2F;XXL-JOB%E6%9E%B6%E6%9E%84%E5%9B%BEV2.1.0.png">
+<meta property="og:updated_time" content="2019-12-17T10:51:02.646Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;yangsiyuan0&#x2F;GitPic&#x2F;master&#x2F;evernote&#x2F;XXL-JOB%E6%9E%B6%E6%9E%84%E5%9B%BEV2.1.0.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yangsiyuan0.github.io/2019/12/17/xxl-job实践/"/>
+
+
+
+
+
+  <title>xxl-job实践 | 小土狗的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">小土狗的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangsiyuan0.github.io/2019/12/17/xxl-job%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="杨思远">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/person.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小土狗的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">xxl-job实践</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-17T20:35:27+08:00">
+                2019-12-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SpringBoot/" itemprop="url" rel="index">
+                    <span itemprop="name">SpringBoot</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/12/17/xxl-job%E5%AE%9E%E8%B7%B5/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2019/12/17/xxl-job%E5%AE%9E%E8%B7%B5/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  11
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="xxl-job实践"><a href="#xxl-job实践" class="headerlink" title="xxl-job实践"></a>xxl-job实践</h1><blockquote>
+<p><strong>官方文档</strong>：<a href="https://www.xuxueli.com/xxl-job/#《分布式任务调度平台XXL-JOB》" target="_blank" rel="noopener">XXL-JOB官方文档</a></p>
+</blockquote>
+<h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1. 前言"></a>1. 前言</h2><p>XXL-JOB是一个分布式任务调度平台，其核心设计目标是开发迅速、学习简单、轻量级、易扩展</p>
+<ul>
+<li>依赖mysql，不依赖第三方调度中心【elastic-job依赖zookeeper】</li>
+<li>支持任务的动态修改</li>
+<li>支持可视化修改(WEB页面直接进行CRUD操作)</li>
+<li>支持多种任务模式：Bean模式(类级别)、Bean模式(方法级别)、Glue模式</li>
+</ul>
+<h2 id="2-xxl-job核心概念"><a href="#2-xxl-job核心概念" class="headerlink" title="2. xxl-job核心概念"></a>2. xxl-job核心概念</h2><h3 id="2-1-组成模块-amp-架构"><a href="#2-1-组成模块-amp-架构" class="headerlink" title="2.1 组成模块&amp;架构"></a>2.1 组成模块&amp;架构</h3><blockquote>
+<p><code>设计思想：利用&quot;执行器&quot;将&quot;调度&quot;与&quot;任务&quot;解耦；调度中心负责发起调度请求，任务被抽象为分散的JobHandler，执行器负责接收调度中心的请求，并执行对应的任务&quot;</code></p>
+</blockquote>
+<p>xxl-job整体架构分为三个部分：</p>
+<ul>
+<li><strong>调度中心</strong>：<code>需要单独部署一个工程</code>，负责管理调度信息，按照调度配置发出调度请求，自身不承担业务代码<blockquote>
+<ol>
+<li>调度系统与任务解耦，提高了系统可用性和稳定性，同时调度系统性能不再受限于任务模块</li>
+<li>支持可视化、简单且动态的管理调度信息，包括任务新建，更新，删除，GLUE开发和任务报警等,所有上述操作都会实时生效，同时支持监控调度结果以及执行日志，支持执行器Failover</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p><strong>执行器</strong>：<code>可以改造现有业务工程</code>，负责接收调度请求并执行任务逻辑【<strong>执行器本质上是一个内嵌server，默认端口为9999</strong>】</p>
+<blockquote>
+<ol>
+<li>任务模块专注于任务的执行等操作，开发和维护更加简单和高效</li>
+<li>接收“调度中心”的执行请求、终止请求和日志请求</li>
+</ol>
+</blockquote>
+</li>
+<li><p><strong>任务</strong>：即具体的定时任务业务逻辑，主要分为以下几种运行模式</p>
+<blockquote>
+<ol>
+<li>BEAN模式：任务以JobHandler方式维护在执行器端；需要结合 “JobHandler” 属性匹配执行器中任务</li>
+<li>GLUE模式(Java)：任务以源码方式维护在调度中心；该模式的任务实际上是一段继承自IJobHandler的Java类代码并 “groovy” 源码方式维护，它在执行器项目中运行，可使用@Resource/@Autowire注入执行器里中的其他服务</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/yangsiyuan0/GitPic/master/evernote/XXL-JOB%E6%9E%B6%E6%9E%84%E5%9B%BEV2.1.0.png" alt=""></p>
+<h3 id="2-2-数据表结构"><a href="#2-2-数据表结构" class="headerlink" title="2.2 数据表结构"></a>2.2 数据表结构</h3><ul>
+<li><strong>xxl_job_lock</strong>：任务调度锁表；</li>
+<li><strong>xxl_job_group</strong>：执行器信息表，维护任务执行器信息；</li>
+<li><strong>xxl_job_info</strong>：调度扩展信息表： 用于保存XXL-JOB调度任务的扩展信息，如任务分组、任务名、机器地址、执行器、执行入参和报警邮件等等；</li>
+<li><strong>xxl_job_log</strong>：调度日志表： 用于保存XXL-JOB任务调度的历史信息，如调度结果、执行结果、调度入参、调度机器和执行器等等；</li>
+<li><strong>xxl_job_log_report</strong>：调度日志报表：用户存储XXL-JOB任务调度日志的报表，调度中心报表功能页面会用到；</li>
+<li><strong>xxl_job_logglue</strong>：任务GLUE日志：用于保存GLUE更新历史，用于支持GLUE的版本回溯功能；</li>
+<li><strong>xxl_job_registry</strong>：执行器注册表，维护在线的执行器和调度中心机器地址信息；</li>
+<li><strong>xxl_job_user</strong>：系统用户表；</li>
+</ul>
+<h3 id="2-3-任务的运行模式"><a href="#2-3-任务的运行模式" class="headerlink" title="2.3 任务的运行模式"></a>2.3 任务的运行模式</h3><h4 id="2-3-1-Bean模式任务"><a href="#2-3-1-Bean模式任务" class="headerlink" title="2.3.1 Bean模式任务"></a>2.3.1 Bean模式任务</h4><ul>
+<li>每个任务对应一个Sping的bean实例</li>
+<li>任务上声明<code>@JobHandler(value=”名称”)</code>注解，用于被执行器识别</li>
+<li>任务集成统一的<code>IJobHandler</code>接口，覆写execute方法，执行器接收到调度中心的请求时，会自动调用该方法</li>
+<li>execute方法中提供具体的业务逻辑<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span>:  NewMediaCollectHandle   </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Package</span> com.dayang.dycmedit.handler   </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:     新媒体稿件采集定时器(APP、微信、微博、网页) </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>: ysy    </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span>:   2019年12月16日 下午5:51:24  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@version</span> V1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@JobHandler</span>(value=<span class="string">"newMediaManuscriptCollectHandle"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NewMediaManuscriptCollectHandle</span> <span class="keyword">extends</span> <span class="title">IJobHandler</span></span>&#123;</span><br><span class="line">	<span class="meta">@Autowired</span></span><br><span class="line">	<span class="keyword">private</span> AssessmentTaskService assessmentTaskService;</span><br><span class="line">	</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> ReturnT&lt;String&gt; <span class="title">execute</span><span class="params">(String param)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">		<span class="comment">// 分片参数</span></span><br><span class="line">		ShardingUtil.ShardingVO shardingVO = ShardingUtil.getShardingVo();</span><br><span class="line">		<span class="keyword">int</span> shardingItem = shardingVO.getIndex();</span><br><span class="line">		<span class="keyword">int</span> shardingTotalCount = shardingVO.getTotal();</span><br><span class="line">		XxlJobLogger.log(<span class="string">"分片参数：当前分片序号 = &#123;&#125;, 总分片数 = &#123;&#125;"</span>, shardingItem, shardingTotalCount);</span><br><span class="line">		XxlJobLogger.log(<span class="string">"接收参数:&#123;&#125;"</span>, param);</span><br><span class="line">		XxlJobParam xxlJobParam = <span class="keyword">new</span> XxlJobParam();</span><br><span class="line">		<span class="keyword">if</span>(DyStringUtils.isNotEmpty(param))&#123;</span><br><span class="line">			xxlJobParam = <span class="keyword">new</span> GsonBuilder().setDateFormat(<span class="string">"yyyy-MM-dd"</span>).create().fromJson(param, XxlJobParam.class);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">try</span>&#123;</span><br><span class="line">			assessmentTaskService.firstGetAllManuscript(<span class="string">"1"</span>, <span class="number">1</span>, xxlJobParam.getCollectRange(), xxlJobParam.getChannelId(), shardingTotalCount, shardingItem);</span><br><span class="line">		&#125;<span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			XxlJobLogger.log(<span class="string">"定时任务失败:"</span>,e);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 业务逻辑</span></span><br><span class="line">		<span class="keyword">return</span> SUCCESS;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-2-Glue模式任务"><a href="#2-3-2-Glue模式任务" class="headerlink" title="2.3.2 Glue模式任务"></a>2.3.2 Glue模式任务</h4></li>
+<li>任务代码托管在调度中心，在执行器中执行</li>
+<li>任务的代码，实际上是一个继承自<code>IJobHandler</code>实现类的类代码</li>
+<li>执行器接收调度中心请求时，会通过Groovy类加载器加载此代码，实例化成Java对象，同时注入此代码中声明的Spring服务，并调用execute方法<br>【须确保Glue代码中的服务和类引用在“执行器”项目中存在】<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@JobHandler</span>(value=<span class="string">"demoJobHandler"</span>)</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DemoJobHandler</span> <span class="keyword">extends</span> <span class="title">IJobHandler</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> ReturnT&lt;String&gt; <span class="title">execute</span><span class="params">(String param)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">		XxlJobLogger.log(<span class="string">"XXL-JOB, Hello World."</span>);</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">			XxlJobLogger.log(<span class="string">"beat at:"</span> + i);</span><br><span class="line">			TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> SUCCESS;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="2-3-3-任务注册，任务自动发现"><a href="#2-3-3-任务注册，任务自动发现" class="headerlink" title="2.3.3 任务注册，任务自动发现"></a>2.3.3 任务注册，任务自动发现</h4><blockquote>
+<p><code>基于DB进行实现，模块间通讯使用http</code></p>
+</blockquote>
+<ul>
+<li><strong>AppName</strong>: 每个执行器机器集群的唯一标示, 任务注册以 “执行器” 为最小粒度进行注册; 每个任务通过其绑定的执行器可感知对应的执行器机器列表;</li>
+<li><strong>注册表</strong>: 见”xxl_job_registry”表, “执行器” 在进行任务注册时将会周期性维护一条注册记录，即机器地址和AppName的绑定关系; “调度中心” 从而可以动态感知每个AppName在线的机器列表;</li>
+<li><strong>执行器注册</strong>: 任务注册Beat周期默认30s; 执行器以一倍Beat进行执行器注册, 调度中心以一倍Beat进行动态任务发现; 注册信息的失效时间为三倍Beat; </li>
+<li><strong>执行器注册摘除</strong>：执行器销毁时，将会主动上报调度中心并摘除对应的执行器机器信息，提高心跳注册的实时性；</li>
+</ul>
+<h4 id="2-3-4-分片广播"><a href="#2-3-4-分片广播" class="headerlink" title="2.3.4 分片广播"></a>2.3.4 分片广播</h4><blockquote>
+<p><code>执行器集群部署时，路由策略选择&quot;分片广播&quot;，任务调度将会广播给所有执行器，并传递分片参数</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取分片参数(index：当前分片序号，0开始；total：总分片数)</span></span><br><span class="line">ShardingUtil.ShardingVO shardingVO = ShardingUtil.getShardingVo();</span><br></pre></td></tr></table></figure>
+<h4 id="2-3-5-路由策略"><a href="#2-3-5-路由策略" class="headerlink" title="2.3.5 路由策略"></a>2.3.5 路由策略</h4><blockquote>
+<p><code>执行器集群部署时，调度中心的路由规则</code></p>
+</blockquote>
+<ol>
+<li><strong>FIRST</strong>（第一个）：固定选择第一个机器；</li>
+<li><strong>LAST</strong>（最后一个）：固定选择最后一个机器；</li>
+<li><strong>ROUND</strong>（轮询）：；</li>
+<li><strong>RANDOM</strong>（随机）：随机选择在线的机器；</li>
+<li><strong>CONSISTENT_HASH</strong>（一致性HASH）：每个任务按照Hash算法固定选择某一台机器，且所有任务均匀散列在不同机器上。</li>
+<li><strong>LEAST_FREQUENTLY_USED</strong>（最不经常使用）：使用频率最低的机器优先被选举；</li>
+<li><strong>LEAST_RECENTLY_USED</strong>（最近最久未使用）：最久为使用的机器优先被选举；</li>
+<li><strong>FAILOVER</strong>（故障转移）：按照顺序依次进行心跳检测，第一个心跳检测成功的机器选定为目标执行器并发起调度；</li>
+<li><strong>BUSYOVER</strong>（忙碌转移）：按照顺序依次进行空闲检测，第一个空闲检测成功的机器选定为目标执行器并发起调度；</li>
+<li><strong>SHARDING_BROADCAST</strong>(分片广播)：广播触发对应集群中所有机器执行一次任务，同时系统自动传递分片参数；可根据分片参数开发分片任务；</li>
+</ol>
+<h4 id="2-3-6-官方API"><a href="#2-3-6-官方API" class="headerlink" title="2.3.6 官方API"></a>2.3.6 官方API</h4><ul>
+<li><strong>调度中心API服务</strong></li>
+</ul>
+<pre><code>业务相关
+` API服务位置：com.xxl.job.admin.controller.JobInfoController.java`
+&gt; 1. 任务列表查询；2、任务新增；3、任务更新；4、任务删除；5、任务启动；6、任务停止；7、任务触发；
+
+执行器相关
+` API服务位置：com.xxl.job.admin.controller.JobInfoController.java`
+` API服务请求参考代码：com.xxl.job.adminbiz.AdminBizTest.java`
+&gt; - 任务结果回调服务；
+&gt; - 执行器注册服务；
+&gt; - 执行器注册摘除服务；
+&gt; - 触发任务单次执行服务，支持任务根据业务事件触发；</code></pre><ul>
+<li><p><strong>执行器API服务</strong><br><code>API服务位置：com.xxl.job.core.biz.ExecutorBiz</code><br><code>API服务请求参考代码：com.xxl.job.executor.ExecutorBizTest</code></p>
+<blockquote>
+<p>1、心跳检测：调度中心使用<br>2、忙碌检测：调度中心使用<br>3、触发任务执行：调度中心使用；本地进行任务开发时，可使用该API服务模拟触发任务；<br>4、获取Rolling Log：调度中心使用<br>5、终止任务：调度中心使用</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="3-分布式任务调度实战"><a href="#3-分布式任务调度实战" class="headerlink" title="3. 分布式任务调度实战"></a>3. 分布式任务调度实战</h2><h3 id="3-1-构建调度中心"><a href="#3-1-构建调度中心" class="headerlink" title="3.1 构建调度中心"></a>3.1 构建调度中心</h3><p>直接下载官方xxl-job-admin项目，构建数据库，修改配置，部署项目即可</p>
+<h3 id="3-2-构建执行器-amp-分片任务"><a href="#3-2-构建执行器-amp-分片任务" class="headerlink" title="3.2 构建执行器&amp;分片任务"></a>3.2 构建执行器&amp;分片任务</h3><h4 id="3-2-1-改造当前工程为执行器"><a href="#3-2-1-改造当前工程为执行器" class="headerlink" title="3.2.1 改造当前工程为执行器"></a>3.2.1 改造当前工程为执行器</h4><ul>
+<li>引入maven依赖<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- xxl-job相关依赖 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.xuxueli<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>xxl-job-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>新增application相关配置<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">### 调度中心部署跟地址 [选填]：如调度中心集群部署存在多个地址则用逗号分隔。执行器将会使用该地址进行"执行器心跳注册"和"任务结果回调"；为空则关闭自动注册；</span></span><br><span class="line"><span class="string">xxl.job.admin.addresses=http://127.0.0.1:8080/xxl-job-admin</span></span><br><span class="line"><span class="comment">### 执行器AppName [选填]：执行器心跳注册分组依据；为空则关闭自动注册</span></span><br><span class="line"><span class="string">xxl.job.executor.appname=xxl-job-executor-sample</span></span><br><span class="line"><span class="comment">### 执行器IP [选填]：默认为空表示自动获取IP，多网卡时可手动设置指定IP，该IP不会绑定Host仅作为通讯实用；地址信息用于 "执行器注册" 和 "调度中心请求并触发任务"；</span></span><br><span class="line"><span class="string">xxl.job.executor.ip=</span></span><br><span class="line"><span class="comment">### 执行器端口号 [选填]：小于等于0则自动获取；默认端口为9999，单机部署多个执行器时，注意要配置不同执行器端口；</span></span><br><span class="line"><span class="string">xxl.job.executor.port=9999</span></span><br><span class="line"><span class="comment">### 执行器通讯TOKEN [选填]：非空时启用；</span></span><br><span class="line"><span class="string">xxl.job.accessToken=</span></span><br><span class="line"><span class="comment">### 执行器运行日志文件存储磁盘路径 [选填] ：需要对该路径拥有读写权限；为空则使用默认路径；</span></span><br><span class="line"><span class="string">xxl.job.executor.logpath=/data/applogs/xxl-job/jobhandler</span></span><br><span class="line"><span class="comment">### 执行器日志文件保存天数 [选填] ： 过期日志自动清理, 限制值大于等于3时生效; 否则, 如-1, 关闭自动清理功能；</span></span><br><span class="line"><span class="string">xxl.job.executor.logretentiondays=30</span></span><br></pre></td></tr></table></figure>
+<h4 id="3-2-2-定义bean模式任务"><a href="#3-2-2-定义bean模式任务" class="headerlink" title="3.2.2 定义bean模式任务"></a>3.2.2 定义bean模式任务</h4></li>
+<li>显示地声明SpringBean注解、@JobHandler注解</li>
+<li>继承IJobHandler，重写execute方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Title</span>:  ZhixinManuscriptCollectHandle   </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Package</span> com.dayang.dycmedit.handler   </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>:     台内稿件采集任务(网页、微信、微博、电视、串联单、报选题) </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span>: ysy    </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span>:   2019年12月16日 下午6:52:42  </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@version</span> V1.0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@JobHandler</span>(value=<span class="string">"zhixinManuscriptCollectHandle"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZhixinManuscriptCollectHandle</span> <span class="keyword">extends</span> <span class="title">IJobHandler</span></span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(ZhixinManuscriptCollectHandle.class);</span><br><span class="line">	<span class="meta">@Autowired</span></span><br><span class="line">	<span class="keyword">private</span> DataStatisticService dataStatisticService;</span><br><span class="line">	<span class="meta">@Autowired</span></span><br><span class="line">	<span class="keyword">private</span> EditProperties editProperties;</span><br><span class="line">	</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> ReturnT&lt;String&gt; <span class="title">execute</span><span class="params">(String param)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">		<span class="comment">// 分片参数</span></span><br><span class="line">		ShardingUtil.ShardingVO shardingVO = ShardingUtil.getShardingVo();</span><br><span class="line">		<span class="keyword">int</span> shardingItem = shardingVO.getIndex();</span><br><span class="line">		<span class="keyword">int</span> shardingTotalCount = shardingVO.getTotal();</span><br><span class="line">		XxlJobLogger.log(<span class="string">"分片参数：当前分片序号 = &#123;&#125;, 总分片数 = &#123;&#125;"</span>, shardingItem, shardingTotalCount);</span><br><span class="line">		XxlJobLogger.log(<span class="string">"接收参数:&#123;&#125;"</span>, param);</span><br><span class="line">		XxlJobParam xxlJobParam = <span class="keyword">new</span> XxlJobParam();</span><br><span class="line">		<span class="keyword">if</span>(DyStringUtils.isNotEmpty(param))&#123;</span><br><span class="line">			xxlJobParam = <span class="keyword">new</span> GsonBuilder().setDateFormat(<span class="string">"yyyy-MM-dd"</span>).create().fromJson(param, XxlJobParam.class);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">try</span>&#123;</span><br><span class="line">			StasticCollectRequest request = <span class="keyword">new</span> StasticCollectRequest();</span><br><span class="line">			request.setMainStatus(ChannelTypeEnum.ALL.getChannelType());</span><br><span class="line">			request.setCurrentPage(<span class="number">1</span>);</span><br><span class="line">			request.setPageSize(<span class="number">1000</span>);</span><br><span class="line">			request.setTenantId(editProperties.getTenantId());</span><br><span class="line">			Calendar calendar = Calendar.getInstance();</span><br><span class="line">			calendar.add(Calendar.DATE, -<span class="number">1</span>);</span><br><span class="line">			request.setStartDate(DateUtils.toString(calendar.getTime()));</span><br><span class="line">			request.setEndDate(DateUtils.toString(<span class="keyword">new</span> Date()));</span><br><span class="line">			UserInfo user = <span class="keyword">new</span> UserInfo();</span><br><span class="line">			user.setTenantId(editProperties.getTenantId());</span><br><span class="line">			<span class="keyword">if</span>(ChannelTypeEnum.ZHIXIN_CMS.getChannelId().equalsIgnoreCase(xxlJobParam.getChannelId()))&#123;</span><br><span class="line">				dataStatisticService.collectCmsFromZhixin(request, user);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span>(ChannelTypeEnum.ZHIXIN_MICROBLOG.getChannelId().equalsIgnoreCase(xxlJobParam.getChannelId()))&#123;</span><br><span class="line">				dataStatisticService.collectMicroblogFromZhixin(request, user);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span>(ChannelTypeEnum.ZHIXIN_WECHAT.getChannelId().equalsIgnoreCase(xxlJobParam.getChannelId()))&#123;</span><br><span class="line">				dataStatisticService.collectWechatFromZhixin(request, user);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">/*if(ChannelTypeEnum.TOPIC.getChannelId().equalsIgnoreCase(xxlJobParam.getChannelId()))&#123;</span></span><br><span class="line"><span class="comment">				dataStatisticService.collectWechatFromZhixin(request, user);</span></span><br><span class="line"><span class="comment">			&#125;*/</span></span><br><span class="line">			<span class="comment">/*if(ChannelTypeEnum.BILL.getChannelId().equalsIgnoreCase(xxlJobParam.getChannelId()))&#123;</span></span><br><span class="line"><span class="comment">				dataStatisticService.collectWechatFromZhixin(request, user);</span></span><br><span class="line"><span class="comment">			&#125;</span></span><br><span class="line"><span class="comment">			if(ChannelTypeEnum.TV.getChannelId().equalsIgnoreCase(xxlJobParam.getChannelId()))&#123;</span></span><br><span class="line"><span class="comment">				dataStatisticService.collectWechatFromZhixin(request, user);</span></span><br><span class="line"><span class="comment">			&#125;*/</span></span><br><span class="line">		&#125;<span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			XxlJobLogger.log(<span class="string">"定时任务失败:"</span>,e);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 业务逻辑</span></span><br><span class="line">		<span class="keyword">return</span> SUCCESS;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="3-配置执行器-amp-任务"><a href="#3-配置执行器-amp-任务" class="headerlink" title="3. 配置执行器&amp;任务"></a>3. 配置执行器&amp;任务</h3><ul>
+<li>登录：10.10.0.120:8880/xxl-job-admin/toLogin</li>
+<li>进入执行器管理，新增执行器</li>
+<li>进入任务管理页面，新增任务</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="杨思远 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="杨思远 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E5%AE%9A%E6%97%B6%E5%99%A8/" rel="tag"># 定时器</a>
+          
+            <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B0%83%E5%BA%A6/" rel="tag"># 分布式调度</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/27/Redis%E5%AE%A2%E6%88%B7%E7%AB%AF+%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" rel="next" title="Redis客户端+分布式锁">
+                <i class="fa fa-chevron-left"></i> Redis客户端+分布式锁
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/person.jpg"
+                alt="杨思远" />
+            
+              <p class="site-author-name" itemprop="name">杨思远</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/yangsiyuan0" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="yangsiyuan0@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.dayang.com.cn/" title="中科大洋" target="_blank">中科大洋</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://show.dayang.com.cn/dayang" title="智新采编" target="_blank">智新采编</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#xxl-job实践"><span class="nav-text">xxl-job实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-前言"><span class="nav-text">1. 前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-xxl-job核心概念"><span class="nav-text">2. xxl-job核心概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-组成模块-amp-架构"><span class="nav-text">2.1 组成模块&amp;架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-数据表结构"><span class="nav-text">2.2 数据表结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-任务的运行模式"><span class="nav-text">2.3 任务的运行模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-Bean模式任务"><span class="nav-text">2.3.1 Bean模式任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-2-Glue模式任务"><span class="nav-text">2.3.2 Glue模式任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-3-任务注册，任务自动发现"><span class="nav-text">2.3.3 任务注册，任务自动发现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-4-分片广播"><span class="nav-text">2.3.4 分片广播</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-5-路由策略"><span class="nav-text">2.3.5 路由策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-6-官方API"><span class="nav-text">2.3.6 官方API</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-分布式任务调度实战"><span class="nav-text">3. 分布式任务调度实战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-构建调度中心"><span class="nav-text">3.1 构建调度中心</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-构建执行器-amp-分片任务"><span class="nav-text">3.2 构建执行器&amp;分片任务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-改造当前工程为执行器"><span class="nav-text">3.2.1 改造当前工程为执行器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-定义bean模式任务"><span class="nav-text">3.2.2 定义bean模式任务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-配置执行器-amp-任务"><span class="nav-text">3. 配置执行器&amp;任务</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">杨思远</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">39.2k</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人</span>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'HXNYivngkfY6vDXvnSRwn0R7-gzGzoHsz',
+        appKey: '8JUb3qgpcJoS2jbQVeuhPSdc',
+        placeholder: '请在此输入您的留言',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+
+  
+
+  
+
+<!-- 代码块复制功能 -->
+<script type="text/javascript" src="/js/src/clipboard.min.js"></script>  
+<script type="text/javascript" src="/js/src/clipboard-use.js"></script>
+</body>
+</html>
